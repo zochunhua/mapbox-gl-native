@@ -72,6 +72,8 @@ set(MBGL_CORE_FILES
     src/mbgl/gl/object.hpp
     src/mbgl/gl/primitives.hpp
     src/mbgl/gl/program.hpp
+    src/mbgl/gl/program_binary.cpp
+    src/mbgl/gl/program_binary.hpp
     src/mbgl/gl/program_binary_extension.hpp
     src/mbgl/gl/renderbuffer.hpp
     src/mbgl/gl/segment.cpp
@@ -357,6 +359,7 @@ set(MBGL_CORE_FILES
 
     # style/conversion
     include/mbgl/style/conversion/constant.hpp
+    include/mbgl/style/conversion/coordinate.hpp
     include/mbgl/style/conversion/data_driven_property_value.hpp
     include/mbgl/style/conversion/filter.hpp
     include/mbgl/style/conversion/function.hpp
@@ -439,11 +442,15 @@ set(MBGL_CORE_FILES
 
     # style/sources
     include/mbgl/style/sources/geojson_source.hpp
+    include/mbgl/style/sources/image_source.hpp
     include/mbgl/style/sources/raster_source.hpp
     include/mbgl/style/sources/vector_source.hpp
     src/mbgl/style/sources/geojson_source.cpp
     src/mbgl/style/sources/geojson_source_impl.cpp
     src/mbgl/style/sources/geojson_source_impl.hpp
+    src/mbgl/style/sources/image_source.cpp
+    src/mbgl/style/sources/image_source_impl.cpp
+    src/mbgl/style/sources/image_source_impl.hpp
     src/mbgl/style/sources/raster_source.cpp
     src/mbgl/style/sources/raster_source_impl.cpp
     src/mbgl/style/sources/raster_source_impl.hpp
