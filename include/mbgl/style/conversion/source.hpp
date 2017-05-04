@@ -159,8 +159,6 @@ private:
             return {};
         }
         
-        auto result = std::make_unique<ImageSource>(id, *urlString);
-
         auto coordinatesValue = objectMember(value, "coordinates");
         if (!coordinatesValue) {
             error = { "Image source must have a coordinates values" };
@@ -172,15 +170,17 @@ private:
             return {};
         }
         
-        std::vector<std::unique_ptr<LatLng>> coordinates;
+        std::vector<LatLng> coordinates;
         coordinates.reserve(4);
         for( std::size_t i=0; i < arrayLength(*coordinatesValue); i++) {
             auto latLng = conversion::convert<std::unique_ptr<LatLng>>(arrayMember(*coordinatesValue,i), error);
             if (!latLng) {
                 return {};
             }
-            coordinates.push_back(std::move(*latLng));
+            coordinates.push_back(std::move(**latLng));
         }
+        auto result = std::make_unique<ImageSource>(id, *urlString, coordinates);
+
         return { std::move(result) };
     }
 };

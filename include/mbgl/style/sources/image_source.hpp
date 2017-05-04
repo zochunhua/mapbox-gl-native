@@ -3,20 +3,20 @@
 #include <mbgl/style/source.hpp>
 
 namespace mbgl {
+class LatLng;
+
 namespace style {
-        
+
 class ImageSource : public Source {
 public:
-    ImageSource(std::string id, const std::string& url);
+    ImageSource(std::string id, const std::string& url, const std::vector<LatLng>);
     
     const std::string& getURL() const;
     void setURL(const std::string& url) ;
 
-//    void setCoordinates(const std::vector&);
-//    optional<std::vector> getCoordinates() const;
-
-    // Private implementation
+    void setCoordinates(const std::vector<LatLng>);
     
+    // Private implementation
     class Impl;
     Impl* const impl;
 };
