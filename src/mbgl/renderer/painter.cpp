@@ -179,12 +179,7 @@ void Painter::render(const Style& style, const FrameData& frame_, View& view, Sp
         annotationSpriteAtlas.upload(context, 0);
 
         for (const auto& item : order) {
-            for (const auto& tileRef : item.tiles) {
-                const auto& bucket = tileRef.get().tile.getBucket(*item.layer.baseImpl);
-                if (bucket && bucket->needsUpload()) {
-                    bucket->upload(context);
-                }
-            }
+            uploadItem(item);
         }
     }
 
@@ -336,13 +331,7 @@ void Painter::renderPass(PaintParameters& parameters,
             context.setDepthMode(depthModeForSublayer(0, gl::DepthMode::ReadWrite));
             context.clear(Color{ 0.0f, 0.0f, 0.0f, 0.0f }, 1.0f, {});
 
-            for (auto& tileRef : item.tiles) {
-                auto& tile = tileRef.get();
-
-                MBGL_DEBUG_GROUP(context, layer.baseImpl->id + " - " + util::toString(tile.id));
-                auto bucket = tile.tile.getBucket(*layer.baseImpl);
-                bucket->render(*this, parameters, layer, tile);
-            }
+            renderItem(parameters, item);
 
             parameters.view.bind();
             context.bindTexture(extrusionTexture->getTexture());
@@ -364,17 +353,31 @@ void Painter::renderPass(PaintParameters& parameters,
                 ExtrusionTextureProgram::PaintPropertyBinders{ properties, 0 }, properties,
                 state.getZoom());
         } else {
-            for (auto& tileRef : item.tiles) {
-                auto& tile = tileRef.get();
-                MBGL_DEBUG_GROUP(context, layer.baseImpl->id + " - " + util::toString(tile.id));
-                auto bucket = tile.tile.getBucket(*layer.baseImpl);
-                bucket->render(*this, parameters, layer, tile);
-            }
+            renderItem(parameters, item);
         }
     }
 
     if (debug::renderTree) {
         Log::Info(Event::Render, "%*s%s", --indent * 4, "", "}");
+    }
+}
+
+void Painter::renderItem(PaintParameters& parameters, const RenderItem& item) {
+    const RenderLayer& layer = item.layer;
+    for (auto& tileRef : item.tiles) {
+        auto& tile = tileRef.get();
+        MBGL_DEBUG_GROUP(context, layer.baseImpl.id + " - " + util::toString(tile.id));
+        auto bucket = tile.tile.getBucket(layer);
+        bucket->render(*this, parameters, layer, tile);
+    }
+}
+
+void Painter::uploadItem(const RenderItem& item) {
+    for (const auto& tileRef : item.tiles) {
+        const auto& bucket = tileRef.get().tile.getBucket(item.layer);
+        if (bucket && bucket->needsUpload()) {
+            bucket->upload(context);
+        }
     }
 }
 

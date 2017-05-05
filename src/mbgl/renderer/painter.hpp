@@ -91,9 +91,11 @@ public:
     void renderLine(PaintParameters&, LineBucket&, const RenderLineLayer&, const RenderTile&);
     void renderCircle(PaintParameters&, CircleBucket&, const RenderCircleLayer&, const RenderTile&);
     void renderSymbol(PaintParameters&, SymbolBucket&, const RenderSymbolLayer&, const RenderTile&);
-    void renderRaster(PaintParameters&, RasterBucket&, const RenderRasterLayer&, const RenderTile&);
+    void renderRaster(PaintParameters&, RasterBucket&, const RenderRasterLayer&, const mat4&);
     void renderBackground(PaintParameters&, const RenderBackgroundLayer&);
 
+    void renderItem(PaintParameters&, const RenderItem&);
+    void uploadItem(const RenderItem& );
 #ifndef NDEBUG
     // Renders tile clip boundaries, using stencil buffer to calculate fill color.
     void renderClipMasks(PaintParameters&);
@@ -104,8 +106,6 @@ public:
     bool needsAnimation() const;
 
 private:
-    std::vector<RenderItem> determineRenderOrder(const style::Style&);
-
     template <class Iterator>
     void renderPass(PaintParameters&,
                     RenderPass,

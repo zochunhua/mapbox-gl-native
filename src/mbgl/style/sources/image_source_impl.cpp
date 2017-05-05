@@ -23,6 +23,7 @@ ImageSource::Impl::~Impl() = default;
 
 void ImageSource::Impl::setURL(std::string url_) {
     url = std::move(url_);
+    observer->onSourceChanged(base);
 }
 
 const std::string& ImageSource::Impl::getURL() const {
@@ -31,6 +32,17 @@ const std::string& ImageSource::Impl::getURL() const {
 
 void ImageSource::Impl::setCoordinates(const std::vector<LatLng> coords_) {
     coords = std::move(coords_);
+    observer->onSourceChanged(base);
+
+}
+
+std::vector<LatLng> ImageSource::Impl::getCoordinates() const {
+    return coords;
+}
+
+void ImageSource::Impl::setImage(mbgl::UnassociatedImage image_) {
+    image = std::make_unique<mbgl::UnassociatedImage>(std::move(image_));
+    observer->onSourceChanged(base);
 }
 
 std::unique_ptr<RenderSource> ImageSource::Impl::createRenderSource() const {
@@ -58,15 +70,29 @@ void ImageSource::Impl::loadDescription(FileSource& fileSource) {
                 observer->onSourceError(base, std::current_exception());
             }
 
+            // Check whether previous information specifies different coordinates ?
+            bool attributionChanged = false;
+            if (false) {
+                // TODO: AHM: If URL/Coordinates changed, invalidate existing bucket(s)
+                // TODO: AHM: If Min/Max zoom changed: ?
+                // Attribution changed: We need to notify the embedding application that this
+                // changed.
+                attributionChanged = true;
+            }
+
             loaded = true;
 
             observer->onSourceLoaded(base);
+            if (attributionChanged) {
+                observer->onSourceChanged(base);
+            }
         }
     });
 }
 
-mbgl::UnassociatedImage* ImageSource::Impl::getData() const {
-    return image.get();
+std::unique_ptr<mbgl::UnassociatedImage> ImageSource::Impl::getData() const {
+    UnassociatedImage * img = image.get();
+    return std::make_unique<UnassociatedImage>(std::move(*img));
 }
 
 } // namespace style

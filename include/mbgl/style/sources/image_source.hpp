@@ -1,6 +1,7 @@
 #pragma once
 
 #include <mbgl/style/source.hpp>
+#include <mbgl/util/image.hpp>
 
 namespace mbgl {
 class LatLng;
@@ -13,7 +14,7 @@ public:
     
     const std::string& getURL() const;
     void setURL(const std::string& url) ;
-
+    void setImage(mbgl::UnassociatedImage);
     void setCoordinates(const std::vector<LatLng>);
     
     // Private implementation

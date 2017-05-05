@@ -20,6 +20,10 @@ void ImageSource::setURL(const std::string& url) {
     impl->setURL(url);
 }
 
+    void ImageSource::setImage(mbgl::UnassociatedImage image) {
+    impl->setImage(std::move(image));
+}
+
 const std::string& ImageSource::getURL() const {
      return impl->getURL();
 }

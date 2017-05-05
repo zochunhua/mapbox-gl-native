@@ -4,6 +4,7 @@
 #include <mbgl/style/sources/image_source_impl.hpp>
 
 namespace mbgl {
+class RasterBucket;
 
 class RenderImageSource : public RenderSource {
 public:
@@ -36,9 +37,12 @@ public:
     void onLowMemory() final;
     void dumpDebugLogs() const final;
 
+    RasterBucket* bucket;
+
 private:
     const style::ImageSource::Impl& impl;
     std::map<UnwrappedTileID, RenderTile> tiles;
+    bool isImageLoaded;
 };
     
 } // namespace mbgl

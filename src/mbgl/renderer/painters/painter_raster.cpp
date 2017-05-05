@@ -42,7 +42,7 @@ static std::array<float, 3> spinWeights(float spin) {
 void Painter::renderRaster(PaintParameters& parameters,
                            RasterBucket& bucket,
                            const RenderRasterLayer& layer,
-                           const RenderTile& tile) {
+                           const mat4& matrix) {
     if (pass != RenderPass::Translucent)
         return;
     if (!bucket.hasData())
@@ -62,7 +62,7 @@ void Painter::renderRaster(PaintParameters& parameters,
         gl::StencilMode::disabled(),
         colorModeForRenderPass(),
         RasterProgram::UniformValues {
-            uniforms::u_matrix::Value{ tile.matrix },
+            uniforms::u_matrix::Value{ matrix },
             uniforms::u_image0::Value{ 0 },
             uniforms::u_image1::Value{ 1 },
             uniforms::u_opacity::Value{ properties.get<RasterOpacity>() },

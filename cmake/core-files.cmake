@@ -72,8 +72,6 @@ set(MBGL_CORE_FILES
     src/mbgl/gl/object.hpp
     src/mbgl/gl/primitives.hpp
     src/mbgl/gl/program.hpp
-    src/mbgl/gl/program_binary.cpp
-    src/mbgl/gl/program_binary.hpp
     src/mbgl/gl/program_binary_extension.hpp
     src/mbgl/gl/renderbuffer.hpp
     src/mbgl/gl/segment.cpp
@@ -244,6 +242,8 @@ set(MBGL_CORE_FILES
     # renderer/sources
     src/mbgl/renderer/sources/render_geojson_source.cpp
     src/mbgl/renderer/sources/render_geojson_source.hpp
+    src/mbgl/renderer/sources/render_image_source.cpp
+    src/mbgl/renderer/sources/render_image_source.hpp
     src/mbgl/renderer/sources/render_raster_source.cpp
     src/mbgl/renderer/sources/render_raster_source.hpp
     src/mbgl/renderer/sources/render_vector_source.cpp

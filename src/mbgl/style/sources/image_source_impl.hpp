@@ -17,11 +17,14 @@ public:
 
     ~Impl() final;
 
+    void setImage(mbgl::UnassociatedImage);
+
     void setURL(std::string);
     const std::string& getURL() const;
     void setCoordinates(const std::vector<LatLng> coords);
+    std::vector<LatLng> getCoordinates() const;
 
-    mbgl::UnassociatedImage* getData() const;
+    std::unique_ptr<mbgl::UnassociatedImage> getData() const;
 
     void loadDescription(FileSource&) final;
 
