@@ -21,10 +21,10 @@ bool RenderCustomLayer::hasTransition() const {
     return false;
 }
 
-void RenderCustomLayer::uploadBuckets(gl::Context&) {
+void RenderCustomLayer::uploadBuckets(gl::Context&, RenderSource*) {
 }
 
-void RenderCustomLayer::render(Painter& , PaintParameters& , const RenderSource*) {
+void RenderCustomLayer::render(Painter& , PaintParameters& , RenderSource*) {
 }
 
 

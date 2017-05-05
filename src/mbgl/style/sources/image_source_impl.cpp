@@ -2,7 +2,7 @@
 #include <mbgl/storage/file_source.hpp>
 #include <mbgl/style/source_observer.hpp>
 #include <mbgl/style/sources/image_source_impl.hpp>
-#include <mbgl/renderer/raster_bucket.hpp>
+#include <mbgl/renderer/buckets/raster_bucket.hpp>
 #include <mbgl/util/premultiply.hpp>
 #include <mbgl/renderer/sources/render_image_source.hpp>
 #include <mbgl/renderer/render_tile.hpp>
@@ -33,7 +33,6 @@ const std::string& ImageSource::Impl::getURL() const {
 void ImageSource::Impl::setCoordinates(const std::vector<LatLng> coords_) {
     coords = std::move(coords_);
     observer->onSourceChanged(base);
-
 }
 
 std::vector<LatLng> ImageSource::Impl::getCoordinates() const {
@@ -41,7 +40,7 @@ std::vector<LatLng> ImageSource::Impl::getCoordinates() const {
 }
 
 void ImageSource::Impl::setImage(mbgl::UnassociatedImage image_) {
-    image = std::make_unique<mbgl::UnassociatedImage>(std::move(image_));
+    image = std::move(image_);
     observer->onSourceChanged(base);
 }
 
@@ -52,11 +51,12 @@ std::unique_ptr<RenderSource> ImageSource::Impl::createRenderSource() const {
 
 void ImageSource::Impl::loadDescription(FileSource& fileSource) {
 
-    if (req) {
+    if (req ||  loaded) {
         return;
     }
+    const Resource imageResource { Resource::Unknown, url, {}, Resource::Necessity::Required };
 
-    req = fileSource.request(Resource::source(url), [this](Response res) {
+    req = fileSource.request(imageResource, [this](Response res) {
         if (res.error) {
             observer->onSourceError(base, std::make_exception_ptr(std::runtime_error(res.error->message)));
         } else if (res.notModified) {
@@ -65,34 +65,22 @@ void ImageSource::Impl::loadDescription(FileSource& fileSource) {
             observer->onSourceError(base, std::make_exception_ptr(std::runtime_error("unexpectedly empty image url")));
         } else {
             try {
-                image = std::make_unique<mbgl::UnassociatedImage>(util::unpremultiply(decodeImage(*res.data)));
+                //TODO: AHM: Figure out how to get the correct image pixels through
+                UnassociatedImage img = util::unpremultiply(decodeImage(*res.data));
+                UnassociatedImage img2 { img.size };
+                img2.fill(135);
+                image = std::move(img2);
             } catch (...) {
                 observer->onSourceError(base, std::current_exception());
             }
-
-            // Check whether previous information specifies different coordinates ?
-            bool attributionChanged = false;
-            if (false) {
-                // TODO: AHM: If URL/Coordinates changed, invalidate existing bucket(s)
-                // TODO: AHM: If Min/Max zoom changed: ?
-                // Attribution changed: We need to notify the embedding application that this
-                // changed.
-                attributionChanged = true;
-            }
-
             loaded = true;
-
             observer->onSourceLoaded(base);
-            if (attributionChanged) {
-                observer->onSourceChanged(base);
-            }
         }
     });
 }
 
-std::unique_ptr<mbgl::UnassociatedImage> ImageSource::Impl::getData() const {
-    UnassociatedImage * img = image.get();
-    return std::make_unique<UnassociatedImage>(std::move(*img));
+const mbgl::UnassociatedImage& ImageSource::Impl::getData() const {
+    return image;
 }
 
 } // namespace style

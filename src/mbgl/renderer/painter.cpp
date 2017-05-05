@@ -13,6 +13,7 @@
 
 #include <mbgl/style/style.hpp>
 #include <mbgl/style/layer_impl.hpp>
+#include <mbgl/style/layers/custom_layer_impl.hpp>
 
 #include <mbgl/tile/tile.hpp>
 #include <mbgl/renderer/layers/render_background_layer.hpp>
@@ -179,7 +180,7 @@ void Painter::render(const Style& style, const FrameData& frame_, View& view, Sp
         annotationSpriteAtlas.upload(context, 0);
 
         for (const auto& item : order) {
-            item.layer.uploadBuckets(context);
+            item.layer.uploadBuckets(context, item.source);
         }
     }
 
@@ -364,9 +365,8 @@ void Painter::renderPass(PaintParameters& parameters,
 
 void Painter::renderItem(PaintParameters& parameters, const RenderItem& item) {
     RenderLayer& layer = item.layer;
-    const RenderSource * source = item.source;
-    MBGL_DEBUG_GROUP(context, layer.getID());// + " - " + util::toString(tile.id));
-    layer.render(*this, parameters, source);
+    MBGL_DEBUG_GROUP(context, layer.getID());
+    layer.render(*this, parameters, item.source);
 }
 
 mat4 Painter::matrixForTile(const UnwrappedTileID& tileID) {

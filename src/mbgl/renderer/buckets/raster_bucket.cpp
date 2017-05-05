@@ -4,8 +4,8 @@
 #include <mbgl/renderer/painter.hpp>
 #include <mbgl/gl/context.hpp>
 #include <mbgl/renderer/render_tile.hpp>
-namespace mbgl {
 
+namespace mbgl {
 using namespace style;
 
 RasterBucket::RasterBucket(UnassociatedImage&& image_) : image(std::move(image_)) {
@@ -13,6 +13,10 @@ RasterBucket::RasterBucket(UnassociatedImage&& image_) : image(std::move(image_)
 
 void RasterBucket::upload(gl::Context& context) {
     texture = context.createTexture(std::move(image));
+    if (vertices.vertexSize() > 0) {
+        vertexBuffer = context.createVertexBuffer(std::move(vertices));
+        indexBuffer = context.createIndexBuffer(std::move(indices));
+    }
     uploaded = true;
 }
 
@@ -20,7 +24,14 @@ void RasterBucket::render(Painter& painter,
                           PaintParameters& parameters,
                           const RenderLayer& layer,
                           const RenderTile& tile) {
-    painter.renderRaster(parameters, *this, *layer.as<RenderRasterLayer>(), tile.matrix);
+    painter.renderRaster(parameters, *this, *layer.as<RenderRasterLayer>(), tile.matrix, false);
+}
+
+void RasterBucket::render(Painter& painter,
+                          PaintParameters& parameters,
+                          const RenderLayer& layer,
+                          const mat4& matrix) {
+    painter.renderRaster(parameters, *this, *layer.as<RenderRasterLayer>(), matrix,true);
 }
 
 bool RasterBucket::hasData() const {

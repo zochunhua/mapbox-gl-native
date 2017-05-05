@@ -44,7 +44,7 @@ bool RenderLineLayer::hasTransition() const {
     return unevaluated.hasTransition();
 }
 
-void RenderLineLayer::uploadBuckets(gl::Context& context) {
+void RenderLineLayer::uploadBuckets(gl::Context& context, RenderSource*) {
     for (const auto& tileRef : renderTiles) {
         const auto& bucket = tileRef.get().tile.getBucket(*this);
         if (bucket && bucket->needsUpload()) {
@@ -53,10 +53,9 @@ void RenderLineLayer::uploadBuckets(gl::Context& context) {
     }
 }
 
-void RenderLineLayer::render(Painter& painter, PaintParameters& parameters, const RenderSource*) {
+void RenderLineLayer::render(Painter& painter, PaintParameters& parameters, RenderSource*) {
     for (auto& tileRef : renderTiles) {
         auto& tile = tileRef.get();
-//        MBGL_DEBUG_GROUP(context, getID() + " - " + util::toString(tile.id));
         auto bucket = tile.tile.getBucket(*this);
         bucket->render(painter, parameters, *this, tile);
     }

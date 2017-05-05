@@ -112,7 +112,7 @@ style::SymbolPropertyValues RenderSymbolLayer::textPropertyValues(const style::S
     };
 }
 
-void RenderSymbolLayer::uploadBuckets(gl::Context& context) {
+void RenderSymbolLayer::uploadBuckets(gl::Context& context, RenderSource* ) {
     for (const auto& tileRef : renderTiles) {
         const auto& bucket = tileRef.get().tile.getBucket(*this);
         if (bucket && bucket->needsUpload()) {
@@ -121,10 +121,9 @@ void RenderSymbolLayer::uploadBuckets(gl::Context& context) {
     }
 }
 
-void RenderSymbolLayer::render(Painter& painter, PaintParameters& parameters, const RenderSource*) {
+void RenderSymbolLayer::render(Painter& painter, PaintParameters& parameters, RenderSource*) {
     for (auto& tileRef : renderTiles) {
         auto& tile = tileRef.get();
-//        MBGL_DEBUG_GROUP(context, getID() + " - " + util::toString(tile.id));
         auto bucket = tile.tile.getBucket(*this);
         bucket->render(painter, parameters, *this, tile);
     }

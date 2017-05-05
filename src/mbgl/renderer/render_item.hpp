@@ -23,7 +23,7 @@ public:
     }
 
     RenderLayer& layer;
-    const RenderSource * source;
+    RenderSource * source;
 };
 
 class RenderData {

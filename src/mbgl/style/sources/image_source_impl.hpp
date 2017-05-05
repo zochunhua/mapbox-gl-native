@@ -24,7 +24,7 @@ public:
     void setCoordinates(const std::vector<LatLng> coords);
     std::vector<LatLng> getCoordinates() const;
 
-    std::unique_ptr<mbgl::UnassociatedImage> getData() const;
+    const mbgl::UnassociatedImage& getData() const;
 
     void loadDescription(FileSource&) final;
 
@@ -34,7 +34,7 @@ private:
     std::string url;
     std::vector<LatLng> coords;
     std::unique_ptr<AsyncRequest> req;
-    std::unique_ptr<mbgl::UnassociatedImage> image;
+    mbgl::UnassociatedImage image;
 };
 
 } // namespace style

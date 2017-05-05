@@ -30,11 +30,11 @@ void RenderBackgroundLayer::evaluate(const PropertyEvaluationParameters &paramet
                                                            : RenderPass::None;
 }
 
-void RenderBackgroundLayer::uploadBuckets(gl::Context&) {
+void RenderBackgroundLayer::uploadBuckets(gl::Context&, RenderSource*) {
 }
 
 
-void RenderBackgroundLayer::render(Painter& , PaintParameters& , const RenderSource*) {
+void RenderBackgroundLayer::render(Painter& , PaintParameters& , RenderSource*) {
 }
 
 

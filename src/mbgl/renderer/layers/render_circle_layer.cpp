@@ -42,7 +42,7 @@ bool RenderCircleLayer::hasTransition() const {
     return unevaluated.hasTransition();
 }
 
-void RenderCircleLayer::uploadBuckets(gl::Context& context) {
+void RenderCircleLayer::uploadBuckets(gl::Context& context, RenderSource*) {
     for (const auto& tileRef : renderTiles) {
         const auto& bucket = tileRef.get().tile.getBucket(*this);
         if (bucket && bucket->needsUpload()) {
@@ -51,10 +51,9 @@ void RenderCircleLayer::uploadBuckets(gl::Context& context) {
     }
 }
 
-void RenderCircleLayer::render(Painter& painter, PaintParameters& parameters, const RenderSource*) {
+void RenderCircleLayer::render(Painter& painter, PaintParameters& parameters, RenderSource*) {
     for (auto& tileRef : renderTiles) {
         auto& tile = tileRef.get();
-//        MBGL_DEBUG_GROUP(context, getID() + " - " + util::toString(tile.id));
         auto bucket = tile.tile.getBucket(*this);
         bucket->render(painter, parameters, *this, tile);
     }

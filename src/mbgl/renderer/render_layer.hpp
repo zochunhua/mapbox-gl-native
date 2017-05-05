@@ -66,8 +66,8 @@ public:
     // Checks whether this layer can be rendered.
     bool needsRendering(float zoom) const;
 
-    virtual void uploadBuckets(gl::Context&) = 0;
-    virtual void render(Painter& , PaintParameters& , const RenderSource* source) = 0;
+    virtual void uploadBuckets(gl::Context&, RenderSource* source) = 0;
+    virtual void render(Painter& , PaintParameters& , RenderSource* source) = 0;
     // Check wether the given geometry intersects
     // with the feature
     virtual bool queryIntersectsFeature(
@@ -90,6 +90,8 @@ protected:
     // Stores what render passes this layer is currently enabled for. This depends on the
     // evaluated StyleProperties object and is updated accordingly.
     RenderPass passes = RenderPass::None;
+
+    //Stores current set of tiles to be rendered for this layer.
     std::vector<std::reference_wrapper<RenderTile>> renderTiles;
 
 };
