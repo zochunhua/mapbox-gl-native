@@ -95,7 +95,7 @@ public:
     void renderBackground(PaintParameters&, const RenderBackgroundLayer&);
 
     void renderItem(PaintParameters&, const RenderItem&);
-    void uploadItem(const RenderItem& );
+
 #ifndef NDEBUG
     // Renders tile clip boundaries, using stencil buffer to calculate fill color.
     void renderClipMasks(PaintParameters&);

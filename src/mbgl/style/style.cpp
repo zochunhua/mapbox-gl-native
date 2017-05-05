@@ -624,8 +624,8 @@ RenderData Style::getRenderData(MapDebugOptions debugOptions, float angle) const
                 tile.used = true;
             }
         }
-
-        result.order.emplace_back(*layer, source, std::move(sortedTilesForInsertion));
+        layer->setRenderTiles(std::move(sortedTilesForInsertion));
+        result.order.emplace_back(*layer, source);
     }
 
     return result;

@@ -1,6 +1,7 @@
 #include <mbgl/renderer/layers/render_background_layer.hpp>
 #include <mbgl/style/layers/background_layer_impl.hpp>
 #include <mbgl/renderer/bucket.hpp>
+#include <mbgl/gl/context.hpp>
 
 namespace mbgl {
 
@@ -28,6 +29,14 @@ void RenderBackgroundLayer::evaluate(const PropertyEvaluationParameters &paramet
     passes = evaluated.get<style::BackgroundOpacity>() > 0 ? RenderPass::Translucent
                                                            : RenderPass::None;
 }
+
+void RenderBackgroundLayer::uploadBuckets(gl::Context&) {
+}
+
+
+void RenderBackgroundLayer::render(Painter& , PaintParameters& , const RenderSource*) {
+}
+
 
 bool RenderBackgroundLayer::hasTransition() const {
     return unevaluated.hasTransition();

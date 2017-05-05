@@ -14,6 +14,9 @@ public:
     void evaluate(const PropertyEvaluationParameters&) override;
     bool hasTransition() const override;
 
+    void uploadBuckets(gl::Context&) override;
+    void render(Painter& , PaintParameters& , const RenderSource*) override;
+
     std::unique_ptr<Bucket> createBucket(const BucketParameters&, const std::vector<const RenderLayer*>&) const final;
 
     const style::CustomLayer::Impl& impl() const;

@@ -5,6 +5,9 @@
 #include <mbgl/renderer/property_evaluation_parameters.hpp>
 #include <mbgl/style/layers/symbol_layer_impl.hpp>
 #include <mbgl/tile/geometry_tile_data.hpp>
+#include <mbgl/renderer/render_tile.hpp>
+#include <mbgl/gl/context.hpp>
+#include <mbgl/tile/tile.hpp>
 
 namespace mbgl {
 
@@ -107,6 +110,24 @@ style::SymbolPropertyValues RenderSymbolLayer::textPropertyValues(const style::S
             evaluated.get<style::TextHaloWidth>().constantOr(1),
             evaluated.get<style::TextColor>().constantOr(Color::black()).a > 0
     };
+}
+
+void RenderSymbolLayer::uploadBuckets(gl::Context& context) {
+    for (const auto& tileRef : renderTiles) {
+        const auto& bucket = tileRef.get().tile.getBucket(*this);
+        if (bucket && bucket->needsUpload()) {
+            bucket->upload(context);
+        }
+    }
+}
+
+void RenderSymbolLayer::render(Painter& painter, PaintParameters& parameters, const RenderSource*) {
+    for (auto& tileRef : renderTiles) {
+        auto& tile = tileRef.get();
+//        MBGL_DEBUG_GROUP(context, getID() + " - " + util::toString(tile.id));
+        auto bucket = tile.tile.getBucket(*this);
+        bucket->render(painter, parameters, *this, tile);
+    }
 }
 
 } // namespace mbgl

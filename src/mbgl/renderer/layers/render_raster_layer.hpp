@@ -3,6 +3,7 @@
 #include <mbgl/renderer/render_layer.hpp>
 #include <mbgl/style/layers/raster_layer_impl.hpp>
 #include <mbgl/style/layers/raster_layer_properties.hpp>
+#include <mbgl/renderer/bucket.hpp>
 
 namespace mbgl {
 
@@ -14,6 +15,9 @@ public:
     void transition(const TransitionParameters&) override;
     void evaluate(const PropertyEvaluationParameters&) override;
     bool hasTransition() const override;
+
+    void uploadBuckets(gl::Context&) override;
+    void render(Painter& , PaintParameters& , const RenderSource*) override;
 
     std::unique_ptr<Bucket> createBucket(const BucketParameters&, const std::vector<const RenderLayer*>&) const override;
 

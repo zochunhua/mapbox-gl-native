@@ -71,6 +71,9 @@ public:
     style::IconPaintProperties::PossiblyEvaluated iconPaintProperties() const;
     style::TextPaintProperties::PossiblyEvaluated textPaintProperties() const;
 
+    void uploadBuckets(gl::Context&) override;
+    void render(Painter& , PaintParameters& , const RenderSource*) override;
+
     style::SymbolPropertyValues iconPropertyValues(const style::SymbolLayoutProperties::PossiblyEvaluated&) const;
     style::SymbolPropertyValues textPropertyValues(const style::SymbolLayoutProperties::PossiblyEvaluated&) const;
 

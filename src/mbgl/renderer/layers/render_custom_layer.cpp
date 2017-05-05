@@ -1,6 +1,7 @@
 #include <mbgl/renderer/layers/render_custom_layer.hpp>
 #include <mbgl/style/layers/custom_layer_impl.hpp>
 #include <mbgl/renderer/bucket.hpp>
+#include <mbgl/gl/context.hpp>
 
 namespace mbgl {
 
@@ -19,6 +20,13 @@ void RenderCustomLayer::evaluate(const PropertyEvaluationParameters&) {
 bool RenderCustomLayer::hasTransition() const {
     return false;
 }
+
+void RenderCustomLayer::uploadBuckets(gl::Context&) {
+}
+
+void RenderCustomLayer::render(Painter& , PaintParameters& , const RenderSource*) {
+}
+
 
 std::unique_ptr<Bucket> RenderCustomLayer::createBucket(const BucketParameters&, const std::vector<const RenderLayer*>&) const {
     assert(false);

@@ -179,7 +179,7 @@ void Painter::render(const Style& style, const FrameData& frame_, View& view, Sp
         annotationSpriteAtlas.upload(context, 0);
 
         for (const auto& item : order) {
-            uploadItem(item);
+            item.layer.uploadBuckets(context);
         }
     }
 
@@ -363,22 +363,10 @@ void Painter::renderPass(PaintParameters& parameters,
 }
 
 void Painter::renderItem(PaintParameters& parameters, const RenderItem& item) {
-    const RenderLayer& layer = item.layer;
-    for (auto& tileRef : item.tiles) {
-        auto& tile = tileRef.get();
-        MBGL_DEBUG_GROUP(context, layer.baseImpl.id + " - " + util::toString(tile.id));
-        auto bucket = tile.tile.getBucket(layer);
-        bucket->render(*this, parameters, layer, tile);
-    }
-}
-
-void Painter::uploadItem(const RenderItem& item) {
-    for (const auto& tileRef : item.tiles) {
-        const auto& bucket = tileRef.get().tile.getBucket(item.layer);
-        if (bucket && bucket->needsUpload()) {
-            bucket->upload(context);
-        }
-    }
+    RenderLayer& layer = item.layer;
+    const RenderSource * source = item.source;
+    MBGL_DEBUG_GROUP(context, layer.getID());// + " - " + util::toString(tile.id));
+    layer.render(*this, parameters, source);
 }
 
 mat4 Painter::matrixForTile(const UnwrappedTileID& tileID) {

@@ -8,7 +8,7 @@
 #include <mbgl/renderer/layers/render_raster_layer.hpp>
 #include <mbgl/renderer/layers/render_symbol_layer.hpp>
 #include <mbgl/style/types.hpp>
-
+#include <mbgl/renderer/render_tile.hpp>
 namespace mbgl {
 
 using namespace style;
@@ -62,4 +62,9 @@ bool RenderLayer::needsRendering(float zoom) const {
            && baseImpl->maxZoom >= zoom;
 }
 
-} // namespace mbgl
+void RenderLayer::setRenderTiles(std::vector<std::reference_wrapper<RenderTile>> tiles) {
+    renderTiles = std::move(tiles);
+}
+
+} //namespace mbgl
+

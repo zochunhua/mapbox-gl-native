@@ -4,6 +4,9 @@
 #include <mbgl/geometry/feature_index.hpp>
 #include <mbgl/util/math.hpp>
 #include <mbgl/util/intersection_tests.hpp>
+#include <mbgl/gl/context.hpp>
+#include <mbgl/renderer/render_tile.hpp>
+#include <mbgl/tile/tile.hpp>
 
 namespace mbgl {
 
@@ -38,6 +41,25 @@ void RenderCircleLayer::evaluate(const PropertyEvaluationParameters& parameters)
 bool RenderCircleLayer::hasTransition() const {
     return unevaluated.hasTransition();
 }
+
+void RenderCircleLayer::uploadBuckets(gl::Context& context) {
+    for (const auto& tileRef : renderTiles) {
+        const auto& bucket = tileRef.get().tile.getBucket(*this);
+        if (bucket && bucket->needsUpload()) {
+            bucket->upload(context);
+        }
+    }
+}
+
+void RenderCircleLayer::render(Painter& painter, PaintParameters& parameters, const RenderSource*) {
+    for (auto& tileRef : renderTiles) {
+        auto& tile = tileRef.get();
+//        MBGL_DEBUG_GROUP(context, getID() + " - " + util::toString(tile.id));
+        auto bucket = tile.tile.getBucket(*this);
+        bucket->render(painter, parameters, *this, tile);
+    }
+}
+
 
 bool RenderCircleLayer::queryIntersectsFeature(
         const GeometryCoordinates& queryGeometry,
