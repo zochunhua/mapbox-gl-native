@@ -50,13 +50,10 @@ void RenderImageSource::upload(gl::Context& context) {
 
 void RenderImageSource::updateTiles(const TileParameters& ) {
     if(impl.loaded && !isLoaded()) {
-        //TODO: AHM: Don't make a copy here
+        //TODO: AHM: Is it possible to do this without making a clone ?
         UnassociatedImage img = impl.getData().clone();
         bucket = std::make_unique<RasterBucket>(std::move(img));
         loaded = true;
-    }
-
-    if (isLoaded()) {
         auto coords = impl.getCoordinates();
         GeometryCoordinates geomCoords;
         for ( auto latLng : coords) {
@@ -65,11 +62,11 @@ void RenderImageSource::updateTiles(const TileParameters& ) {
         assert(geomCoords.size() == 4);
         bucket->vertices.emplace_back(RasterProgram::layoutVertex({ geomCoords[0].x, geomCoords[0].y }, { 0, 0 }));
         bucket->vertices.emplace_back(RasterProgram::layoutVertex({ geomCoords[1].x, geomCoords[1].y }, { 32767, 0 }));
-        bucket->vertices.emplace_back(RasterProgram::layoutVertex({ geomCoords[2].x, geomCoords[2].y }, { 0, 32767 }));
-        bucket->vertices.emplace_back(RasterProgram::layoutVertex({ geomCoords[3].x, geomCoords[3].y }, { 32767, 32767 }));
+        bucket->vertices.emplace_back(RasterProgram::layoutVertex({ geomCoords[3].x, geomCoords[3].y }, { 0, 32767 }));
+        bucket->vertices.emplace_back(RasterProgram::layoutVertex({ geomCoords[2].x, geomCoords[2].y }, { 32767, 32767 }));
 
         bucket->indices.emplace_back(0, 1, 2);
-        bucket->indices.emplace_back(2, 3, 0);
+        bucket->indices.emplace_back(1, 2, 3);
 
         bucket->segments.emplace_back(0, 0, 4, 6);
     }

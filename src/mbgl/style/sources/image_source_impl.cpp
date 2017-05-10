@@ -65,11 +65,7 @@ void ImageSource::Impl::loadDescription(FileSource& fileSource) {
             observer->onSourceError(base, std::make_exception_ptr(std::runtime_error("unexpectedly empty image url")));
         } else {
             try {
-                //TODO: AHM: Figure out how to get the correct image pixels through
-                UnassociatedImage img = util::unpremultiply(decodeImage(*res.data));
-                UnassociatedImage img2 { img.size };
-                img2.fill(135);
-                image = std::move(img2);
+                image = util::unpremultiply(decodeImage(*res.data));
             } catch (...) {
                 observer->onSourceError(base, std::current_exception());
             }
