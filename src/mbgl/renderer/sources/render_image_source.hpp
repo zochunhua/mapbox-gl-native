@@ -52,12 +52,15 @@ public:
     void dumpDebugLogs() const final;
 
 private:
+
+    void setupBucket(GeometryCoordinates& coordiantes);
     const style::ImageSource::Impl& impl;
     std::map<UnwrappedTileID, RenderTile> tiles;
     bool loaded;
-
+    std::unique_ptr<UnwrappedTileID> tileId;
     std::unique_ptr<RasterBucket> bucket;
     mat4 matrix;
+
 };
     
 } // namespace mbgl

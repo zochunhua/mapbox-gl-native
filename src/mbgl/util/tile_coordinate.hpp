@@ -44,18 +44,6 @@ public:
                         std::numeric_limits<int16_t>::max()))
         };
     }
-
-    static GeometryCoordinate toGeometryCoordinate(const LatLng& latLng) {
-        auto projectedPoint = Projection::project(latLng, 1) / double (util::tileSize);
-        return {
-            int16_t(util::clamp<int64_t>(projectedPoint.x * util::EXTENT,
-                                         std::numeric_limits<int16_t>::min(),
-                                         std::numeric_limits<int16_t>::max())),
-            int16_t(util::clamp<int64_t>(projectedPoint.y * util::EXTENT,
-                                         std::numeric_limits<int16_t>::min(),
-                                         std::numeric_limits<int16_t>::max()))
-        };
-    }
 };
 
 } // namespace mbgl

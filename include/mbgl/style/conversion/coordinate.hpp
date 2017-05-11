@@ -17,8 +17,8 @@ public:
             return {};
         }
         //Style spec uses GeoJSON convention for specifying coordinates
-        optional<float> latitude = toNumber(arrayMember(value, 1));
-        optional<float> longitude = toNumber(arrayMember(value, 0));
+        optional<double> latitude = toDouble(arrayMember(value, 1));
+        optional<double> longitude = toDouble(arrayMember(value, 0));
     
         if (!latitude || !longitude) {
             error = { "coordinate array must contain numeric longtitude and latitude values" };

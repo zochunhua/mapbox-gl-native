@@ -3,7 +3,10 @@
 #include <mbgl/renderer/buckets/raster_bucket.hpp>
 #include <mbgl/map/transform_state.hpp>
 #include <mbgl/util/tile_coordinate.hpp>
-#include <mbgl/gl/context.hpp>
+#include <mbgl/renderer/tile_parameters.hpp>
+#include <mbgl/util/tile_cover.hpp>
+#include <mbgl/math/log2.hpp>
+#include <mbgl/renderer/painter.hpp>
 
 namespace mbgl {
 
@@ -22,13 +25,21 @@ bool RenderImageSource::isLoaded() const {
 void RenderImageSource::startRender(algorithm::ClipIDGenerator& ,
                                     const mat4& projMatrix,
                                     const mat4& ,
-                                    const TransformState& transform) {
+                                    const TransformState& transformState) {
+
+    if (!loaded) {
+        return;
+    }
     matrix::identity(matrix);
-    transform.matrixFor(matrix, {0,0,0});
+    transformState.matrixFor(matrix, *tileId);
     matrix::multiply(matrix, projMatrix, matrix);
 }
 
-void RenderImageSource::finishRender(Painter& ) {
+void RenderImageSource::finishRender(Painter& painter) {
+    if (!loaded) {
+        return;
+    }
+    painter.renderTileDebug(matrix);
 }
 
 std::unordered_map<std::string, std::vector<Feature>>
@@ -48,28 +59,72 @@ void RenderImageSource::upload(gl::Context& context) {
     }
 }
 
-void RenderImageSource::updateTiles(const TileParameters& ) {
-    if(impl.loaded && !isLoaded()) {
-        //TODO: AHM: Is it possible to do this without making a clone ?
-        UnassociatedImage img = impl.getData().clone();
-        bucket = std::make_unique<RasterBucket>(std::move(img));
-        loaded = true;
-        auto coords = impl.getCoordinates();
-        GeometryCoordinates geomCoords;
-        for ( auto latLng : coords) {
-            geomCoords.push_back(TileCoordinate::toGeometryCoordinate(latLng));
-        }
-        assert(geomCoords.size() == 4);
-        bucket->vertices.emplace_back(RasterProgram::layoutVertex({ geomCoords[0].x, geomCoords[0].y }, { 0, 0 }));
-        bucket->vertices.emplace_back(RasterProgram::layoutVertex({ geomCoords[1].x, geomCoords[1].y }, { 32767, 0 }));
-        bucket->vertices.emplace_back(RasterProgram::layoutVertex({ geomCoords[3].x, geomCoords[3].y }, { 0, 32767 }));
-        bucket->vertices.emplace_back(RasterProgram::layoutVertex({ geomCoords[2].x, geomCoords[2].y }, { 32767, 32767 }));
-
-        bucket->indices.emplace_back(0, 1, 2);
-        bucket->indices.emplace_back(1, 2, 3);
-
-        bucket->segments.emplace_back(0, 0, 4, 6);
+void RenderImageSource::updateTiles(const TileParameters& parameters) {
+    if(!impl.loaded || isLoaded()) {
+        return;
     }
+    auto transformState = parameters.transformState;
+    auto size = transformState.getSize();
+    double viewportHeight = size.height;
+
+    auto coords = impl.getCoordinates();
+
+    ScreenCoordinate nePixel = {-INFINITY, -INFINITY};
+    ScreenCoordinate swPixel = {INFINITY, INFINITY};
+
+    for (LatLng latLng : coords) {
+        ScreenCoordinate pixel = transformState.latLngToScreenCoordinate(latLng);
+        swPixel.x = std::min(swPixel.x, pixel.x);
+        nePixel.x = std::max(nePixel.x, pixel.x);
+        swPixel.y = std::min(swPixel.y, viewportHeight - pixel.y);
+        nePixel.y = std::max(nePixel.y, viewportHeight - pixel.y);
+    }
+
+    double width = nePixel.x - swPixel.x;
+    double height = nePixel.y - swPixel.y;
+
+    // Calculate the zoom level.
+    double minScale = INFINITY;
+    if (width > 0 || height > 0) {
+        double scaleX = double(size.width) / width;
+        double scaleY = double(size.height) / height;
+        minScale = util::min(scaleX, scaleY);
+    }
+    double zoom = transformState.getZoom() + util::log2(minScale);
+    zoom = util::clamp(zoom, transformState.getMinZoom(), transformState.getMaxZoom());
+
+    // Calculate Geometry Coordinates based on ideal Tile for these LatLng
+    auto imageBounds = LatLngBounds::hull(coords[0], coords[1]);
+    imageBounds.extend(coords[2]);
+    imageBounds.extend(coords[3]);
+    auto tileCover = util::tileCover(imageBounds, ::round(zoom));
+    tileId = std::make_unique<UnwrappedTileID>(tileCover[0].wrap, tileCover[0].canonical);
+    GeometryCoordinates geomCoords;
+    for ( auto latLng : coords) {
+        auto tc = TileCoordinate::fromLatLng(0, latLng);
+        auto gc = TileCoordinate::toGeometryCoordinate(tileCover[0], tc.p);
+        geomCoords.push_back(gc);
+    }
+
+    setupBucket(geomCoords);
+
+    loaded = true;
+}
+
+void RenderImageSource::setupBucket(GeometryCoordinates& geomCoords) {
+    UnassociatedImage img = impl.getData().clone();
+    bucket = std::make_unique<RasterBucket>(std::move(img));
+
+    //Set Bucket Vertices, Indices, and segments
+    bucket->vertices.emplace_back(RasterProgram::layoutVertex({ geomCoords[0].x, geomCoords[0].y }, { 0, 0 }));
+    bucket->vertices.emplace_back(RasterProgram::layoutVertex({ geomCoords[1].x, geomCoords[1].y }, { 32767, 0 }));
+    bucket->vertices.emplace_back(RasterProgram::layoutVertex({ geomCoords[3].x, geomCoords[3].y }, { 0, 32767 }));
+    bucket->vertices.emplace_back(RasterProgram::layoutVertex({ geomCoords[2].x, geomCoords[2].y }, { 32767, 32767 }));
+
+    bucket->indices.emplace_back(0, 1, 2);
+    bucket->indices.emplace_back(1, 2, 3);
+
+    bucket->segments.emplace_back(0, 0, 4, 6);
 }
 
 void RenderImageSource::render(Painter& painter, PaintParameters& parameters, const RenderLayer& layer)  {

@@ -11,8 +11,9 @@ using namespace style;
 RasterBucket::RasterBucket(UnassociatedImage&& image_) : image(std::move(image_)) {
 }
 
+
 void RasterBucket::upload(gl::Context& context) {
-    texture = context.createTexture(std::move(image));
+    texture = context.createTexture(image);
     if (vertices.vertexSize() > 0) {
         vertexBuffer = context.createVertexBuffer(std::move(vertices));
         indexBuffer = context.createIndexBuffer(std::move(indices));
