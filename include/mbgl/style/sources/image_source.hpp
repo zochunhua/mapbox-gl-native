@@ -10,7 +10,7 @@ namespace style {
 
 class ImageSource : public Source {
 public:
-    ImageSource(std::string id, const std::string& url, const std::vector<LatLng>);
+    ImageSource(std::string id, const std::vector<LatLng>);
     
     const std::string& getURL() const;
     void setURL(const std::string& url) ;

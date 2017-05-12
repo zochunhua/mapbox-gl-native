@@ -456,7 +456,8 @@ TEST(Source, ImageSourceImageUpdate) {
     };
     std::vector<LatLng> coords;
 
-    ImageSource source("source", "http://url", coords);
+    ImageSource source("source", coords);
+    source.setURL("http://url");
     source.baseImpl->setObserver(&test.styleObserver);
 
     // Load initial, so the source state will be loaded=true

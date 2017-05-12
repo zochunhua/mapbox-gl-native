@@ -179,7 +179,8 @@ private:
             }
             coordinates.push_back(*latLng);
         }
-        auto result = std::make_unique<ImageSource>(id, *urlString, coordinates);
+        auto result = std::make_unique<ImageSource>(id, coordinates);
+        result->setURL(*urlString);
 
         return { std::move(result) };
     }

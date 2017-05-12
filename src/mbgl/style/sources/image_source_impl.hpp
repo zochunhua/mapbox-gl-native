@@ -13,7 +13,7 @@ namespace style {
 
 class ImageSource::Impl : public Source::Impl {
 public:
-    Impl(std::string id, Source&, const std::string& url, const std::vector<LatLng>& coords);
+    Impl(std::string id, Source&, const std::vector<LatLng>& coords);
 
     ~Impl() final;
 

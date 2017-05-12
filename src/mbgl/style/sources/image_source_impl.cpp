@@ -12,10 +12,8 @@
 namespace mbgl {
 namespace style {
 
-ImageSource::Impl::Impl(std::string id_, Source& base_, const std::string& url_,
-                        const std::vector<LatLng>& coords_)
+ImageSource::Impl::Impl(std::string id_, Source& base_, const std::vector<LatLng>& coords_)
     : Source::Impl(SourceType::Image, std::move(id_), base_),
-    url(url_),
     coords(std::move(coords_)) {
 }
 
@@ -23,7 +21,12 @@ ImageSource::Impl::~Impl() = default;
 
 void ImageSource::Impl::setURL(std::string url_) {
     url = std::move(url_);
-    observer->onSourceChanged(base);
+    // Signal that the source description needs a reload
+    if (loaded || req) {
+        loaded = false;
+        req.reset();
+        observer->onSourceDescriptionChanged(base);
+    }
 }
 
 const std::string& ImageSource::Impl::getURL() const {
@@ -41,6 +44,9 @@ std::vector<LatLng> ImageSource::Impl::getCoordinates() const {
 
 void ImageSource::Impl::setImage(mbgl::UnassociatedImage image_) {
     image = std::move(image_);
+    if (req) {
+        req.reset();
+    }
     observer->onSourceChanged(base);
 }
 
@@ -50,6 +56,9 @@ std::unique_ptr<RenderSource> ImageSource::Impl::createRenderSource() const {
 
 
 void ImageSource::Impl::loadDescription(FileSource& fileSource) {
+    if (url.empty()) {
+        loaded = true;
+    }
 
     if (req ||  loaded) {
         return;

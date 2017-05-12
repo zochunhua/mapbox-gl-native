@@ -14,12 +14,11 @@ using namespace style;
 
 RenderImageSource::RenderImageSource(const style::ImageSource::Impl& impl_)
 : RenderSource(impl_),
- impl(impl_),
- loaded(false) {
+ impl(impl_) {
 }
 
 bool RenderImageSource::isLoaded() const {
-    return loaded;
+    return !!bucket;
 }
 
 void RenderImageSource::startRender(algorithm::ClipIDGenerator& ,
@@ -27,7 +26,7 @@ void RenderImageSource::startRender(algorithm::ClipIDGenerator& ,
                                     const mat4& ,
                                     const TransformState& transformState) {
 
-    if (!loaded) {
+    if (!isLoaded()) {
         return;
     }
     matrix::identity(matrix);
@@ -36,7 +35,7 @@ void RenderImageSource::startRender(algorithm::ClipIDGenerator& ,
 }
 
 void RenderImageSource::finishRender(Painter& painter) {
-    if (!loaded) {
+    if (!isLoaded()) {
         return;
     }
     painter.renderTileDebug(matrix);
@@ -105,14 +104,14 @@ void RenderImageSource::updateTiles(const TileParameters& parameters) {
         auto gc = TileCoordinate::toGeometryCoordinate(tileCover[0], tc.p);
         geomCoords.push_back(gc);
     }
-
     setupBucket(geomCoords);
-
-    loaded = true;
 }
 
 void RenderImageSource::setupBucket(GeometryCoordinates& geomCoords) {
     UnassociatedImage img = impl.getData().clone();
+    if (!img.valid()) {
+        return;
+    }
     bucket = std::make_unique<RasterBucket>(std::move(img));
 
     //Set Bucket Vertices, Indices, and segments

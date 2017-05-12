@@ -5,10 +5,9 @@
 namespace mbgl {
 namespace style {
 
-ImageSource::ImageSource(std::string id, const std::string& url,
-                         const std::vector<LatLng> coords)
+ImageSource::ImageSource(std::string id, const std::vector<LatLng> coords)
     : Source(SourceType::Image,
-     std::make_unique<ImageSource::Impl>(std::move(id), *this, url, coords)),
+     std::make_unique<ImageSource::Impl>(std::move(id), *this, coords)),
      impl(static_cast<Impl*>(baseImpl.get())) {
 }
 
@@ -20,7 +19,7 @@ void ImageSource::setURL(const std::string& url) {
     impl->setURL(url);
 }
 
-    void ImageSource::setImage(mbgl::UnassociatedImage image) {
+void ImageSource::setImage(mbgl::UnassociatedImage image) {
     impl->setImage(std::move(image));
 }
 
