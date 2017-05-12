@@ -8,10 +8,10 @@ namespace style {
 namespace conversion {
             
 template<>
-struct Converter<std::unique_ptr<LatLng>> {
+struct Converter<LatLng> {
 public:
     template <class V>
-    optional<std::unique_ptr<LatLng>> operator() (const V& value, Error& error) const {
+    optional<LatLng> operator() (const V& value, Error& error) const {
         if (!isArray(value) || arrayLength(value) < 2 ) {
             error = { "coordinate array must contain numeric longtitude and latitude values" };
             return {};
@@ -28,7 +28,7 @@ public:
             error = { "coordinate latitude must be between -90 and 90" };
             return {};
         }
-        return { std::make_unique<LatLng>(*latitude, *longitude) };
+        return LatLng(*latitude, *longitude);
     }
 };
 

@@ -47,7 +47,7 @@ public:
             wrap();
         }
     }
-    
+
     double latitude() const { return lat; }
     double longitude() const { return lon; }
 

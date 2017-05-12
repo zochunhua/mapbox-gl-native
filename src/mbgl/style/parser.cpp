@@ -57,9 +57,9 @@ StyleParseResult Parser::parse(const std::string& json) {
     if (document.HasMember("center")) {
         const JSValue& value = document["center"];
         conversion::Error error;
-        auto convertedLatLng = conversion::convert<std::unique_ptr<LatLng>>(value, error);
+        auto convertedLatLng = conversion::convert<LatLng>(value, error);
         if (convertedLatLng) {
-            latLng = LatLng((*convertedLatLng)->latitude(), (*convertedLatLng)->longitude());
+            latLng = *convertedLatLng;
         } else {
             Log::Warning(Event::ParseStyle, "center coordinate must be a longitude, latitude pair");
         }

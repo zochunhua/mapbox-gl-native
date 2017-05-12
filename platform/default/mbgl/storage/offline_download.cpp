@@ -199,7 +199,7 @@ void OfflineDownload::activateDownload() {
             case SourceType::Video:
             case SourceType::Annotations:
             case SourceType::Image:
-                    break;
+                break;
             }
         }
 
