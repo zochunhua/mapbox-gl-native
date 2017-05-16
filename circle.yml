@@ -4,6 +4,7 @@ workflows:
   version: 2
   default:
     jobs:
+      - danger
       - android-debug-arm-v7
       - android-release-all
 
@@ -128,3 +129,20 @@ jobs:
           name: Publish to Maven
           command: |
             if [ "${CIRCLE_BRANCH}" == "release-ios-v3.6.0-android-v5.1.0" ]; then make run-android-upload-archives ; fi
+
+# ------------------------------------------------------------------------------
+  danger:
+    docker:
+      - image: mbgl/ci:r2-base
+    working_directory: /src
+    steps:
+      - checkout
+      - run:
+          name: Update submodule
+          command: git submodule update --init mapbox-gl-js
+      - run:
+          name: Install Node modules
+          command: npm install
+      - run:
+          name: Run Danger
+          command: npm run danger
