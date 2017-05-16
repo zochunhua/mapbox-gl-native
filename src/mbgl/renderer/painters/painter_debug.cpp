@@ -81,7 +81,7 @@ void Painter::renderTileDebug(mat4& matrix) {
     if (frame.debugOptions == MapDebugOptions::NoDebug)
         return;
 
-    static const style::PaintProperties<>::Evaluated properties {};
+    static const style::Properties<>::PossiblyEvaluated properties {};
     static const DebugProgram::PaintPropertyBinders paintAttibuteData(properties, 0);
 
     if (frame.debugOptions & MapDebugOptions::TileBorders) {

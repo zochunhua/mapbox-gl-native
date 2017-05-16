@@ -533,8 +533,8 @@ RenderData Style::getRenderData(MapDebugOptions debugOptions, float angle) const
         }
     }
 
-    for (const auto& layerImpl : layerImpls) {
-        const RenderLayer* layer = getRenderLayer(layerImpl->id);
+    for (auto& layerImpl : layerImpls) {
+        RenderLayer* layer = getRenderLayer(layerImpl->id);
         assert(layer);
 
         if (!layer->needsRendering(zoomHistory.lastZoom)) {

@@ -12,9 +12,12 @@ namespace mbgl {
 
 using namespace style;
 
-RenderImageSource::RenderImageSource(const style::ImageSource::Impl& impl_)
-: RenderSource(impl_),
- impl(impl_) {
+RenderImageSource::RenderImageSource(Immutable<style::ImageSource::Impl> impl_)
+: RenderSource(impl_) {
+}
+
+const style::ImageSource::Impl& RenderImageSource::impl() const {
+    return static_cast<const style::ImageSource::Impl&>(*baseImpl);
 }
 
 bool RenderImageSource::isLoaded() const {
@@ -59,14 +62,14 @@ void RenderImageSource::upload(gl::Context& context) {
 }
 
 void RenderImageSource::updateTiles(const TileParameters& parameters) {
-    if(!impl.loaded || isLoaded()) {
+    if(isLoaded()) {
         return;
     }
     auto transformState = parameters.transformState;
     auto size = transformState.getSize();
     double viewportHeight = size.height;
 
-    auto coords = impl.getCoordinates();
+    auto coords = impl().getCoordinates();
 
     ScreenCoordinate nePixel = {-INFINITY, -INFINITY};
     ScreenCoordinate swPixel = {INFINITY, INFINITY};
@@ -108,7 +111,7 @@ void RenderImageSource::updateTiles(const TileParameters& parameters) {
 }
 
 void RenderImageSource::setupBucket(GeometryCoordinates& geomCoords) {
-    UnassociatedImage img = impl.getData().clone();
+    UnassociatedImage img = impl().getImage().clone();
     if (!img.valid()) {
         return;
     }
@@ -133,7 +136,7 @@ void RenderImageSource::render(Painter& painter, PaintParameters& parameters, co
 }
 
 void RenderImageSource::dumpDebugLogs() const {
-    Log::Info(Event::General, "RenderImageSource::id: %s", baseImpl.id.c_str());
+    Log::Info(Event::General, "RenderImageSource::id: %s", impl().id.c_str());
     Log::Info(Event::General, "RenderImageSource::loaded: %s", isLoaded() ? "yes" : "no");
 }
 

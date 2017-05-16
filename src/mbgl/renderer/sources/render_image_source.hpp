@@ -4,11 +4,12 @@
 #include <mbgl/style/sources/image_source_impl.hpp>
 #include <mbgl/tile/geometry_tile_data.hpp>
 #include <mbgl/util/optional.hpp>
+#include <mbgl/renderer/render_tile.hpp>
+#include <mbgl/renderer/buckets/raster_bucket.hpp>
 
 namespace mbgl {
 class RenderLayer;
 class PaintParameters;
-class RasterBucket;
 
 namespace gl {
     class Context;
@@ -16,7 +17,7 @@ namespace gl {
 
 class RenderImageSource : public RenderSource {
 public:
-    RenderImageSource(const style::ImageSource::Impl&);
+    RenderImageSource(Immutable<style::ImageSource::Impl>);
     
     bool isLoaded() const final;
     void upload(gl::Context&) ;
@@ -52,9 +53,9 @@ public:
     void dumpDebugLogs() const final;
 
 private:
+    const style::ImageSource::Impl& impl() const;
 
     void setupBucket(GeometryCoordinates& coordiantes);
-    const style::ImageSource::Impl& impl;
     std::map<UnwrappedTileID, RenderTile> tiles;
 
     std::unique_ptr<UnwrappedTileID> tileId;

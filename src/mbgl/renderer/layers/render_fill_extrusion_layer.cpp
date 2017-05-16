@@ -39,7 +39,7 @@ bool RenderFillExtrusionLayer::hasTransition() const {
 
 void RenderFillExtrusionLayer::uploadBuckets(gl::Context& context, RenderSource*) {
     for (const auto& tileRef : renderTiles) {
-        const auto& bucket = tileRef.get().tile.getBucket(*this);
+        const auto& bucket = tileRef.get().tile.getBucket(impl());
         if (bucket && bucket->needsUpload()) {
             bucket->upload(context);
         }
@@ -49,7 +49,7 @@ void RenderFillExtrusionLayer::uploadBuckets(gl::Context& context, RenderSource*
 void RenderFillExtrusionLayer::render(Painter& painter, PaintParameters& parameters, RenderSource*) {
     for (auto& tileRef : renderTiles) {
         auto& tile = tileRef.get();
-        auto bucket = tile.tile.getBucket(*this);
+        auto bucket = tile.tile.getBucket(impl());
         bucket->render(painter, parameters, *this, tile);
     }
 }

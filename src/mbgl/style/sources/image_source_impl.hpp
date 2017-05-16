@@ -5,35 +5,25 @@
 #include <mbgl/util/image.hpp>
 
 namespace mbgl {
-
-class AsyncRequest;
-class RenderSource;
+class LatLng;
 
 namespace style {
 
 class ImageSource::Impl : public Source::Impl {
 public:
-    Impl(std::string id, Source&, const std::vector<LatLng>& coords);
+    Impl(std::string id, std::vector<LatLng> coords);
+    Impl(const Impl& rhs, std::vector<LatLng> coords);
+    Impl(const Impl& rhs, UnassociatedImage image);
 
     ~Impl() final;
 
-    void setImage(mbgl::UnassociatedImage);
-
-    void setURL(std::string);
-    const std::string& getURL() const;
-    void setCoordinates(const std::vector<LatLng> coords);
+    void setImage(UnassociatedImage );
+    const mbgl::UnassociatedImage& getImage() const;
     std::vector<LatLng> getCoordinates() const;
 
-    const mbgl::UnassociatedImage& getData() const;
-
-    void loadDescription(FileSource&) final;
-
-    std::unique_ptr<RenderSource> createRenderSource() const final;
-
+    optional<std::string> getAttribution() const final;
 private:
-    std::string url;
     std::vector<LatLng> coords;
-    std::unique_ptr<AsyncRequest> req;
     mbgl::UnassociatedImage image;
 };
 
