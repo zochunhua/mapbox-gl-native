@@ -27,7 +27,7 @@ public:
                      const mat4& clipMatrix,
                      const TransformState&) final;
 
-    void render      (Painter&, PaintParameters& , const RenderLayer& ) ;
+    void render(Painter&, PaintParameters& , const RenderLayer& ) ;
 
     void finishRender(Painter&) final;
 

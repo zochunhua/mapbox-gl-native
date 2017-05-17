@@ -20,7 +20,7 @@ public:
 
     void setImage(mbgl::UnassociatedImage);
 
-    void setCoordinates(const std::vector<LatLng>);
+    void setCoordinates(const std::vector<LatLng>&);
     std::vector<LatLng> getCoordinates() const;
 
     class Impl;

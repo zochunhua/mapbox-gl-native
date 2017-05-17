@@ -86,7 +86,7 @@ public:
 
     void renderClippingMask(const UnwrappedTileID&, const ClipID&);
     void renderTileDebug(const RenderTile&);
-    void renderTileDebug(mat4& matrix);
+    void renderTileDebug(const mat4& matrix);
     void renderFill(PaintParameters&, FillBucket&, const RenderFillLayer&, const RenderTile&);
     void renderFillExtrusion(PaintParameters&, FillExtrusionBucket&, const RenderFillExtrusionLayer&, const RenderTile&);
     void renderLine(PaintParameters&, LineBucket&, const RenderLineLayer&, const RenderTile&);

@@ -18,7 +18,7 @@ const ImageSource::Impl& ImageSource::impl() const {
     return static_cast<const Impl&>(*baseImpl);
 }
 
-void ImageSource::setCoordinates(const std::vector<LatLng> coords_) {
+void ImageSource::setCoordinates(const std::vector<LatLng>& coords_) {
     baseImpl = makeMutable<Impl>(impl(), coords_);
     observer->onSourceChanged(*this);
 }

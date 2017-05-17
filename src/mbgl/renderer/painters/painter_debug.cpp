@@ -77,7 +77,7 @@ void Painter::renderTileDebug(const RenderTile& renderTile) {
     }
 }
 
-void Painter::renderTileDebug(mat4& matrix) {
+void Painter::renderTileDebug(const mat4& matrix) {
     if (frame.debugOptions == MapDebugOptions::NoDebug)
         return;
 

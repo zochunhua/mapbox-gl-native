@@ -46,7 +46,7 @@ void RenderRasterLayer::uploadBuckets(gl::Context& context, RenderSource* source
             }
         }
     } else {
-        RenderImageSource * imageSource = dynamic_cast<RenderImageSource*>(source);
+        RenderImageSource* imageSource = dynamic_cast<RenderImageSource*>(source);
         if (imageSource) {
             imageSource->upload(context);
         }
@@ -61,7 +61,7 @@ void RenderRasterLayer::render(Painter& painter, PaintParameters& parameters, Re
             bucket->render(painter, parameters, *this, tile);
         }
     } else {
-        RenderImageSource * imageSource = dynamic_cast<RenderImageSource*>(source);
+        RenderImageSource* imageSource = dynamic_cast<RenderImageSource*>(source);
         if (imageSource) {
             imageSource->render(painter, parameters, *this);
         }

@@ -18,12 +18,12 @@ namespace style {
 class RenderItem {
 public:
     RenderItem(RenderLayer& layer_,
-               RenderSource * renderSource_)
+               RenderSource* renderSource_)
         : layer(layer_), source(renderSource_) {
     }
 
     RenderLayer& layer;
-    RenderSource * source;
+    RenderSource* source;
 };
 
 class RenderData {

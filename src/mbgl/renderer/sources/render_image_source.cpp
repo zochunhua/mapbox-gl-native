@@ -13,7 +13,7 @@ namespace mbgl {
 using namespace style;
 
 RenderImageSource::RenderImageSource(Immutable<style::ImageSource::Impl> impl_)
-: RenderSource(impl_) {
+    : RenderSource(impl_) {
 }
 
 const style::ImageSource::Impl& RenderImageSource::impl() const {

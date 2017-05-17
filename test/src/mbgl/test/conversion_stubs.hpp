@@ -95,8 +95,6 @@ inline optional<float> toNumber(const Value& value) {
 inline optional<double> toDouble(const Value& value) {
     if (value.is<double>()) {
         return value.get<double>();
-    } else {
-        return {};
     }
     return {};
 }
