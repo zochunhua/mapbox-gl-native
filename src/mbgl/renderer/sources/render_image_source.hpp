@@ -58,10 +58,10 @@ private:
     void setupBucket(GeometryCoordinates& coordiantes);
     std::map<UnwrappedTileID, RenderTile> tiles;
 
-    std::unique_ptr<UnwrappedTileID> tileId;
+    std::vector<UnwrappedTileID> tileIds;
     std::unique_ptr<RasterBucket> bucket;
-    mat4 matrix;
-
+    std::vector<mat4> matrices;
+    bool shouldRender;
 };
     
 } // namespace mbgl

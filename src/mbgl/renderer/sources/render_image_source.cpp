@@ -13,7 +13,8 @@ namespace mbgl {
 using namespace style;
 
 RenderImageSource::RenderImageSource(Immutable<style::ImageSource::Impl> impl_)
-    : RenderSource(impl_) {
+    : RenderSource(impl_),
+    shouldRender(false) {
 }
 
 const style::ImageSource::Impl& RenderImageSource::impl() const {
@@ -32,16 +33,24 @@ void RenderImageSource::startRender(algorithm::ClipIDGenerator& ,
     if (!isLoaded()) {
         return;
     }
-    matrix::identity(matrix);
-    transformState.matrixFor(matrix, *tileId);
-    matrix::multiply(matrix, projMatrix, matrix);
+    matrices.clear();
+
+    for (size_t i=0; i < tileIds.size() ; i++) {
+        mat4 matrix;
+        matrix::identity(matrix);
+        transformState.matrixFor(matrix, tileIds[i]);
+        matrix::multiply(matrix, projMatrix, matrix);
+        matrices.push_back(matrix);
+    }
 }
 
 void RenderImageSource::finishRender(Painter& painter) {
-    if (!isLoaded()) {
+    if (!isLoaded() || !shouldRender) {
         return;
     }
-    painter.renderTileDebug(matrix);
+    for (auto matrix: matrices) {
+        painter.renderTileDebug(matrix);
+    }
 }
 
 std::unordered_map<std::string, std::vector<Feature>>
@@ -56,21 +65,20 @@ std::vector<Feature> RenderImageSource::querySourceFeatures(const SourceQueryOpt
 }
 
 void RenderImageSource::upload(gl::Context& context) {
-    if (isLoaded() && bucket->needsUpload()) {
+    if (isLoaded() && bucket->needsUpload() && shouldRender) {
         bucket->upload(context);
     }
 }
 
 void RenderImageSource::updateTiles(const TileParameters& parameters) {
-    if(isLoaded()) {
-        return;
-    }
+
     auto transformState = parameters.transformState;
     auto size = transformState.getSize();
     double viewportHeight = size.height;
 
     auto coords = impl().getCoordinates();
 
+    //Compute the screen coordinates at wrap=0 for the given LatLng
     ScreenCoordinate nePixel = {-INFINITY, -INFINITY};
     ScreenCoordinate swPixel = {INFINITY, INFINITY};
 
@@ -81,11 +89,16 @@ void RenderImageSource::updateTiles(const TileParameters& parameters) {
         swPixel.y = std::min(swPixel.y, viewportHeight - pixel.y);
         nePixel.y = std::max(nePixel.y, viewportHeight - pixel.y);
     }
-
     double width = nePixel.x - swPixel.x;
     double height = nePixel.y - swPixel.y;
 
-    // Calculate the zoom level.
+    // Don't bother drawing the ImageSource unless it occupies >4 screen pixels
+    shouldRender = (width * height > 4);
+    if (!shouldRender) {
+        return;
+    }
+
+    // Calculate the optimum zoom level to determine the tile ids to use for transforms
     double minScale = INFINITY;
     if (width > 0 || height > 0) {
         double scaleX = double(size.width) / width;
@@ -95,16 +108,26 @@ void RenderImageSource::updateTiles(const TileParameters& parameters) {
     double zoom = transformState.getZoom() + util::log2(minScale);
     zoom = util::clamp(zoom, transformState.getMinZoom(), transformState.getMaxZoom());
 
-    // Calculate Geometry Coordinates based on ideal Tile for these LatLng
     auto imageBounds = LatLngBounds::hull(coords[0], coords[1]);
     imageBounds.extend(coords[2]);
     imageBounds.extend(coords[3]);
-    auto tileCover = util::tileCover(imageBounds, ::round(zoom));
-    tileId = std::make_unique<UnwrappedTileID>(tileCover[0].wrap, tileCover[0].canonical);
+    auto tileCover = util::tileCover(imageBounds, ::floor(zoom));
+    tileIds.clear();
+    tileIds.push_back(tileCover[0]);
+
+    // Add additional wrapped tile ids if neccessary
+    auto idealTiles = util::tileCover(transformState, transformState.getZoom());
+    for (auto tile : idealTiles) {
+        if (tile.wrap != 0 && tileCover[0].canonical.isChildOf(tile.canonical)) {
+            tileIds.push_back({tile.wrap, tileCover[0].canonical});
+        }
+    }
+
+    // Calculate Geometry Coordinates based on tile cover at ideal zoom
     GeometryCoordinates geomCoords;
     for ( auto latLng : coords) {
         auto tc = TileCoordinate::fromLatLng(0, latLng);
-        auto gc = TileCoordinate::toGeometryCoordinate(tileCover[0], tc.p);
+        auto gc = TileCoordinate::toGeometryCoordinate(tileIds[0], tc.p);
         geomCoords.push_back(gc);
     }
     setupBucket(geomCoords);
@@ -115,6 +138,7 @@ void RenderImageSource::setupBucket(GeometryCoordinates& geomCoords) {
     if (!img.valid()) {
         return;
     }
+    //TODO: Build the bucket once, and regen only the vertices
     bucket = std::make_unique<RasterBucket>(std::move(img));
 
     //Set Bucket Vertices, Indices, and segments
@@ -130,8 +154,10 @@ void RenderImageSource::setupBucket(GeometryCoordinates& geomCoords) {
 }
 
 void RenderImageSource::render(Painter& painter, PaintParameters& parameters, const RenderLayer& layer)  {
-    if(isLoaded() && !bucket->needsUpload()) {
-        bucket->render(painter, parameters, layer, matrix);
+    if(isLoaded() && !bucket->needsUpload() && shouldRender) {
+        for (auto matrix: matrices) {
+            bucket->render(painter, parameters, layer, matrix);
+        }
     }
 }
 
