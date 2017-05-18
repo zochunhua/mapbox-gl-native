@@ -13,7 +13,7 @@ class PaintParameters;
 
 namespace gl {
     class Context;
-}
+} // namespace gl
 
 class RenderImageSource : public RenderSource {
 public:
@@ -31,12 +31,12 @@ public:
 
     void finishRender(Painter&) final;
 
-    void updateTiles(const TileParameters&);
-    void removeTiles() {}
-    void invalidateTiles() {}
-    void reloadTiles() {}
+    void updateTiles(const TileParameters&) final;
+    void removeTiles() final {}
+    void invalidateTiles() final {}
+    void reloadTiles() final {}
 
-    std::map<UnwrappedTileID, RenderTile>& getRenderTiles() {
+    std::map<UnwrappedTileID, RenderTile>& getRenderTiles() final {
         return tiles;
     }
 

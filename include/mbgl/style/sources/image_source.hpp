@@ -13,7 +13,7 @@ namespace style {
 class ImageSource : public Source {
 public:
     ImageSource(std::string id, const std::vector<LatLng>);
-    ~ImageSource();
+    ~ImageSource() override;
 
     const std::string& getURL() const;
     void setURL(const std::string& url) ;

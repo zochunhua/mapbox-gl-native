@@ -21,7 +21,7 @@ class RenderTile;
 
 namespace gl {
     class Context;
-}
+}   // namespace gl
 
 class RenderLayer {
 protected:
