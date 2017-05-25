@@ -22,6 +22,7 @@
 #import "MGLVectorSource.h"
 #import "MGLRasterSource.h"
 #import "MGLShapeSource.h"
+#import "MGLImageSource.h"
 
 #import "MGLAttributionInfo_Private.h"
 
@@ -39,6 +40,7 @@
 #include <mbgl/style/sources/geojson_source.hpp>
 #include <mbgl/style/sources/vector_source.hpp>
 #include <mbgl/style/sources/raster_source.hpp>
+#include <mbgl/style/sources/image_source.hpp>
 
 #if TARGET_OS_IPHONE
     #import "UIImage+MGLAdditions.h"
@@ -176,6 +178,8 @@ static NSURL *MGLStyleURL_emerald;
         return [[MGLShapeSource alloc] initWithRawSource:geoJSONSource];
     } else if (auto rasterSource = rawSource->as<mbgl::style::RasterSource>()) {
         return [[MGLRasterSource alloc] initWithRawSource:rasterSource];
+    } else if (auto imageSource = rawSource->as<mbgl::style::ImageSource>()) {
+        return [[MGLImageSource alloc] initWithRawSource:rasterSource];
     } else {
         return [[MGLSource alloc] initWithRawSource:rawSource];
     }
