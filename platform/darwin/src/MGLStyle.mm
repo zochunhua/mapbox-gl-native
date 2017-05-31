@@ -179,7 +179,7 @@ static NSURL *MGLStyleURL_emerald;
     } else if (auto rasterSource = rawSource->as<mbgl::style::RasterSource>()) {
         return [[MGLRasterSource alloc] initWithRawSource:rasterSource];
     } else if (auto imageSource = rawSource->as<mbgl::style::ImageSource>()) {
-        return [[MGLImageSource alloc] initWithRawSource:rasterSource];
+        return [[MGLImageSource alloc] initWithRawSource:imageSource];
     } else {
         return [[MGLSource alloc] initWithRawSource:rawSource];
     }
