@@ -74,8 +74,8 @@
         XCTAssert(defaultPosition.radial == positionValue.MGLSphericalPositionValue.radial);
         XCTAssert(defaultPosition.azimuthal == positionValue.MGLSphericalPositionValue.azimuthal);
         XCTAssert(defaultPosition.polar == positionValue.MGLSphericalPositionValue.polar);
-        XCTAssertEqual(mglLight.positionTransiton.delay, defaultTransition.delay);
-        XCTAssertEqual(mglLight.positionTransiton.duration, defaultTransition.duration);
+        XCTAssertEqual(mglLight.positionTransition.delay, defaultTransition.delay);
+        XCTAssertEqual(mglLight.positionTransition.duration, defaultTransition.duration);
         
         auto lightFromMGLlight = [mglLight mbglLight];
         
@@ -87,7 +87,7 @@
         defaultPosition = MGLSphericalPositionMake(6, 180, 90);
         MGLStyleValue<NSValue *> *positionStyleValue = [MGLStyleValue<NSValue *> valueWithRawValue:[NSValue valueWithMGLSphericalPosition:defaultPosition]];
         mglLight.position = positionStyleValue;
-        mglLight.positionTransiton = transition;
+        mglLight.positionTransition = transition;
         
         NSAssert([mglLight.position isKindOfClass:[MGLConstantStyleValue class]], @"mglLight.position isn’t a MGLConstantStyleValue.");
         positionValue = ((MGLConstantStyleValue *)mglLight.position).rawValue;
@@ -95,8 +95,8 @@
         XCTAssert(defaultPosition.radial == positionValue.MGLSphericalPositionValue.radial);
         XCTAssert(defaultPosition.azimuthal == positionValue.MGLSphericalPositionValue.azimuthal);
         XCTAssert(defaultPosition.polar == positionValue.MGLSphericalPositionValue.polar);
-        XCTAssertEqual(mglLight.positionTransiton.delay, transition.delay);
-        XCTAssertEqual(mglLight.positionTransiton.duration, transition.duration);
+        XCTAssertEqual(mglLight.positionTransition.delay, transition.delay);
+        XCTAssertEqual(mglLight.positionTransition.duration, transition.duration);
         
         lightFromMGLlight = [mglLight mbglLight];
         
@@ -124,8 +124,8 @@
         
         XCTAssert(color.r == colorComponents[0] && color.g == colorComponents[1] && color.b == colorComponents[2] &&
                   color.a == colorComponents[3]);
-        XCTAssertEqual(mglLight.colorTransiton.delay, defaultTransition.delay);
-        XCTAssertEqual(mglLight.colorTransiton.duration, defaultTransition.duration);
+        XCTAssertEqual(mglLight.colorTransition.delay, defaultTransition.delay);
+        XCTAssertEqual(mglLight.colorTransition.duration, defaultTransition.duration);
         
         auto lightFromMGLlight = [mglLight mbglLight];
         
@@ -136,14 +136,14 @@
         
         MGLStyleValue<MGLColor *> *colorStyleValue = [MGLStyleValue<MGLColor *> valueWithRawValue:[MGLColor blackColor]];
         mglLight.color = colorStyleValue;
-        mglLight.colorTransiton = transition;
+        mglLight.colorTransition = transition;
         
         NSAssert([mglLight.color isKindOfClass:[MGLConstantStyleValue class]], @"mglLight.color isn’t a MGLConstantStyleValue.");
         colorValue = ((MGLConstantStyleValue *)mglLight.color).rawValue;
         
         XCTAssertEqual([MGLColor blackColor], colorValue);
-        XCTAssertEqual(mglLight.colorTransiton.delay, transition.delay);
-        XCTAssertEqual(mglLight.colorTransiton.duration, transition.duration);
+        XCTAssertEqual(mglLight.colorTransition.delay, transition.delay);
+        XCTAssertEqual(mglLight.colorTransition.duration, transition.duration);
         
         mbgl::style::PropertyValue<mbgl::Color> colorProperty = { { 0, 0, 0, 1 } };
         light.setColor(colorProperty);

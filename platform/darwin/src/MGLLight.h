@@ -80,7 +80,7 @@ MGL_EXPORT
 /**
  Values describing animated transitions to `position` property.
  */
-@property (nonatomic) MGLTransition positionTransiton;
+@property (nonatomic) MGLTransition positionTransition;
 
 
 #if TARGET_OS_IPHONE
@@ -103,7 +103,7 @@ MGL_EXPORT
 /**
  Values describing animated transitions to `color` property.
  */
-@property (nonatomic) MGLTransition colorTransiton;
+@property (nonatomic) MGLTransition colorTransition;
 
 
 /**
