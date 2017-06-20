@@ -22,6 +22,9 @@ NSString * const MBXMapboxAccessTokenDefaultsKey = @"MBXMapboxAccessToken";
         }
         [MGLAccountManager setAccessToken:accessToken];
     }
+    
+    // TELEM_TODO: Remove this
+    [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"MMEMapboxMetricsDebugLoggingEnabled"];
 
     return YES;
 }

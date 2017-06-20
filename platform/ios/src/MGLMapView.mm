@@ -4,6 +4,8 @@
 
 #import <GLKit/GLKit.h>
 #import <OpenGLES/EAGL.h>
+#import <MapboxMobileEvents/MapboxMobileEvents.h>
+
 
 #include <mbgl/map/map.hpp>
 #include <mbgl/map/view.hpp>
@@ -571,6 +573,9 @@ public:
     _targetCoordinate = kCLLocationCoordinate2DInvalid;
 
     if ([UIApplication sharedApplication].applicationState != UIApplicationStateBackground) {
+        
+        [[MMEEventsManager sharedManager] sendTurnstileEvent];
+        
         [MGLMapboxEvents pushEvent:MGLEventTypeMapLoad withAttributes:@{}];
     }
 }
