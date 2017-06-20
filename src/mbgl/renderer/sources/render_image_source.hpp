@@ -8,6 +8,7 @@ namespace mbgl {
 class RenderLayer;
 class PaintParameters;
 class RasterBucket;
+class LatLng;
 
 namespace gl {
 class Context;
@@ -55,7 +56,8 @@ private:
     std::vector<UnwrappedTileID> tileIds;
     std::unique_ptr<RasterBucket> bucket;
     std::vector<mat4> matrices;
-    bool shouldRender;
+    std::array<LatLng, 4> coordinates;
+    TransformState * transformState;
 };
 
 template <>
