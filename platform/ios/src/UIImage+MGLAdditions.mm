@@ -32,4 +32,8 @@
 -(mbgl::PremultipliedImage)mgl_premultipliedImage {
     return MGLPremultipliedImageFromCGImage(self.CGImage);
 }
+
+- (mbgl::UnassociatedImage)mgl_unassociatedImage {
+    return MGLUnassociatedImageFromCGImage(self.CGImage);
+}
 @end

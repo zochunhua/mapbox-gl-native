@@ -10,3 +10,7 @@ CGImageRef CGImageFromMGLPremultipliedImage(mbgl::PremultipliedImage&&);
 // Creates a PremultipliedImage by copying the pixels of the CGImage.
 // Does not alter the retain count of the supplied CGImage.
 mbgl::PremultipliedImage MGLPremultipliedImageFromCGImage(CGImageRef);
+
+// Creates an UnassociatedImage by copying the pixels of the CGImage.
+// Does not alter the retain count of the supplied CGImage.
+mbgl::UnassociatedImage MGLUnassociatedImageFromCGImage(CGImageRef src);

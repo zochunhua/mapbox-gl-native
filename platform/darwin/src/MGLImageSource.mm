@@ -60,8 +60,7 @@
 
 - (void)setImage:(MGLImage *)image {
     if (image != nullptr) {
-        mbgl::UnassociatedImage unassociatedImage = mbgl::util::unpremultiply(image.mgl_premultipliedImage);
-        self.rawSource->setImage(std::move(unassociatedImage));
+        self.rawSource->setImage(image.mgl_unassociatedImage);        
     } else {
         self.rawSource->setImage(mbgl::UnassociatedImage({0,0}));
     }

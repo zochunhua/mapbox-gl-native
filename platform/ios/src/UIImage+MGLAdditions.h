@@ -12,6 +12,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (mbgl::PremultipliedImage)mgl_premultipliedImage;
 
+- (mbgl::UnassociatedImage)mgl_unassociatedImage;
+
 @end
 
 NS_ASSUME_NONNULL_END

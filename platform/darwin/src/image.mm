@@ -81,6 +81,34 @@ mbgl::PremultipliedImage MGLPremultipliedImageFromCGImage(CGImageRef src) {
     return image;
 }
 
+mbgl::UnassociatedImage MGLUnassociatedImageFromCGImage(CGImageRef src) {
+    const size_t width = CGImageGetWidth(src);
+    const size_t height = CGImageGetHeight(src);
+
+    mbgl::UnassociatedImage image({ static_cast<uint32_t>(width), static_cast<uint32_t>(height) });
+
+    CGColorSpaceHandle colorSpace(CGColorSpaceCreateDeviceRGB());
+    if (!colorSpace) {
+        throw std::runtime_error("CGColorSpaceCreateDeviceRGB failed");
+    }
+
+    constexpr const size_t bitsPerComponent = 8;
+    constexpr const size_t bytesPerPixel = 4;
+    const size_t bytesPerRow = bytesPerPixel * width;
+
+    CGContextHandle context(CGBitmapContextCreate(
+        image.data.get(), width, height, bitsPerComponent, bytesPerRow, *colorSpace,
+        kCGBitmapByteOrderDefault | kCGImageAlphaNoneSkipLast));
+    if (!context) {
+        throw std::runtime_error("CGBitmapContextCreate failed");
+    }
+
+    CGContextSetBlendMode(*context, kCGBlendModeCopy);
+    CGContextDrawImage(*context, CGRectMake(0, 0, width, height), src);
+
+    return image;
+}
+
 namespace mbgl {
 
 PremultipliedImage decodeImage(const std::string& source) {
