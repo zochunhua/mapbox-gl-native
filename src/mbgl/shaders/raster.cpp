@@ -48,6 +48,9 @@ void main() {
     vec4 color = mix(color0, color1, u_fade_t);
     color.a *= u_opacity;
     vec3 rgb = color.rgb;
+    if (color.a > 0.0) {
+        rgb = color.rgb / color.a;
+    }
 
     // spin
     rgb = vec3(
