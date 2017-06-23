@@ -176,7 +176,15 @@ final class NativeMapView {
     if (isDestroyedOn("render")) {
       return;
     }
-    nativeRender();
+
+    try {
+      nativeRender();
+    } catch (Exception exception) {
+      Timber.e(exception,
+        "Exception with state: NativeMapView destroyed: %s, View has surface %s",
+        destroyed,
+        mapView.hasSurface());
+    }
   }
 
   public void resizeView(int width, int height) {

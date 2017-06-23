@@ -418,6 +418,10 @@ public class MapView extends FrameLayout {
     }
   }
 
+  boolean hasSurface() {
+    return hasSurface;
+  }
+
   private class SurfaceCallback implements SurfaceHolder.Callback {
 
     private Surface surface;
