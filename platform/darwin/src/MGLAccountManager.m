@@ -74,6 +74,10 @@
     // NOTE: This is (likely) the initial setup of MGLMapboxEvents
     [MGLMapboxEvents sharedManager];
     
+    // Transform the legacy MGL specific settings to bool values for the metrics library
+    [MMEEventsManager sharedManager].metricsEnabledInSimulator = [[NSUserDefaults standardUserDefaults] boolForKey:@"MGLMapboxMetricsEnabledInSimulator"];
+    [MMEEventsManager sharedManager].debugLoggingEnabled = [[NSUserDefaults standardUserDefaults] boolForKey:@"MGLMapboxMetricsDebugLoggingEnabled"];
+    
     // TELEM_TODO: set correct user agent and host SDK version
     [[MMEEventsManager sharedManager] initializeWithAccessToken:accessToken userAgentBase:@"TelemLibTesting" hostSDKVersion:@"3.6.0-telem-test"];
 #endif

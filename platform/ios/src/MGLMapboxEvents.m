@@ -203,6 +203,7 @@ const NSTimeInterval MGLFlushInterval = 180;
         }
 
         // Watch for changes to telemetry settings by the user
+        // TELEM_TODO: set the telem instance account and enabled settings based on MGL specific user default values
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(userDefaultsDidChange:) name:NSUserDefaultsDidChangeNotification object:nil];
 
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(pauseOrResumeMetricsCollectionIfRequired) name:UIApplicationDidEnterBackgroundNotification object:nil];

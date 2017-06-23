@@ -6,6 +6,12 @@ NSString * const MBXMapboxAccessTokenDefaultsKey = @"MBXMapboxAccessToken";
 
 @implementation MBXAppDelegate
 
++ (void)load {
+    // TELEM_TODO: Remove these
+    [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"MGLMapboxMetricsDebugLoggingEnabled"];
+    [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"MGLMapboxMetricsEnabledInSimulator"];
+}
+
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     // Set access token, unless MGLAccountManager already read it in from Info.plist.
@@ -23,9 +29,6 @@ NSString * const MBXMapboxAccessTokenDefaultsKey = @"MBXMapboxAccessToken";
         [MGLAccountManager setAccessToken:accessToken];
     }
     
-    // TELEM_TODO: Remove this
-    [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"MMEMapboxMetricsDebugLoggingEnabled"];
-
     return YES;
 }
 
