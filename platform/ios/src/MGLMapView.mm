@@ -576,7 +576,7 @@ public:
         
         [[MMEEventsManager sharedManager] sendTurnstileEvent];
         
-        [MGLMapboxEvents pushEvent:MGLEventTypeMapLoad withAttributes:@{}];
+//        [MGLMapboxEvents pushEvent:MGLEventTypeMapLoad withAttributes:@{}];
     }
 }
 
@@ -1078,7 +1078,7 @@ public:
 
         [self validateLocationServices];
 
-        [MGLMapboxEvents flush];
+//        [MGLMapboxEvents flush];
 
         _displayLink.paused = YES;
 
@@ -1125,7 +1125,7 @@ public:
 
         [self validateLocationServices];
 
-        [MGLMapboxEvents pushEvent:MGLEventTypeMapLoad withAttributes:@{}];
+//        [MGLMapboxEvents pushEvent:MGLEventTypeMapLoad withAttributes:@{}];
     }
 }
 
@@ -1259,11 +1259,11 @@ public:
         CLLocationCoordinate2D panCoordinate = [self convertPoint:pointInView toCoordinateFromView:pan.view];
         int zoom = round([self zoomLevel]);
 
-        [MGLMapboxEvents pushEvent:MGLEventTypeMapDragEnd withAttributes:@{
-            MGLEventKeyLatitude: @(panCoordinate.latitude),
-            MGLEventKeyLongitude: @(panCoordinate.longitude),
-            MGLEventKeyZoomLevel: @(zoom)
-        }];
+//        [MGLMapboxEvents pushEvent:MGLEventTypeMapDragEnd withAttributes:@{
+//            MGLEventKeyLatitude: @(panCoordinate.latitude),
+//            MGLEventKeyLongitude: @(panCoordinate.longitude),
+//            MGLEventKeyZoomLevel: @(zoom)
+//        }];
     }
 
 }
@@ -1870,12 +1870,12 @@ public:
     CLLocationCoordinate2D gestureCoordinate = [self convertPoint:pointInView toCoordinateFromView:recognizer.view];
     int zoom = round([self zoomLevel]);
 
-    [MGLMapboxEvents pushEvent:MGLEventTypeMapTap withAttributes:@{
-        MGLEventKeyLatitude: @(gestureCoordinate.latitude),
-        MGLEventKeyLongitude: @(gestureCoordinate.longitude),
-        MGLEventKeyZoomLevel: @(zoom),
-        MGLEventKeyGestureID: gestureID
-    }];
+//    [MGLMapboxEvents pushEvent:MGLEventTypeMapTap withAttributes:@{
+//        MGLEventKeyLatitude: @(gestureCoordinate.latitude),
+//        MGLEventKeyLongitude: @(gestureCoordinate.longitude),
+//        MGLEventKeyZoomLevel: @(zoom),
+//        MGLEventKeyGestureID: gestureID
+//    }];
 }
 
 #pragma mark - Attribution -
@@ -1998,7 +1998,7 @@ public:
         BOOL attributionButtonWasHidden = [hiddenNumber boolValue];
         if (attributionButtonWasHidden)
         {
-            [MGLMapboxEvents ensureMetricsOptoutExists];
+//            [MGLMapboxEvents ensureMetricsOptoutExists];
         }
     }
     else if ([keyPath isEqualToString:@"coordinate"] && [object conformsToProtocol:@protocol(MGLAnnotation)] && ![object isKindOfClass:[MGLMultiPoint class]])

@@ -72,7 +72,7 @@
 #if TARGET_OS_IPHONE || TARGET_OS_SIMULATOR
     // Update MGLMapboxEvents
     // NOTE: This is (likely) the initial setup of MGLMapboxEvents
-    [MGLMapboxEvents sharedManager];
+//    [MGLMapboxEvents sharedManager];
     
     // Transform the legacy MGL specific settings to bool values for the metrics library
     [MMEEventsManager sharedManager].metricsEnabledInSimulator = [[NSUserDefaults standardUserDefaults] boolForKey:@"MGLMapboxMetricsEnabledInSimulator"];
