@@ -573,10 +573,8 @@ public:
     _targetCoordinate = kCLLocationCoordinate2DInvalid;
 
     if ([UIApplication sharedApplication].applicationState != UIApplicationStateBackground) {
-        
         [[MMEEventsManager sharedManager] sendTurnstileEvent];
-        
-//        [MGLMapboxEvents pushEvent:MGLEventTypeMapLoad withAttributes:@{}];
+        [[MMEEventsManager sharedManager] enqueueEventWithName:MMEEventTypeMapLoad];
     }
 }
 
@@ -1125,7 +1123,8 @@ public:
 
         [self validateLocationServices];
 
-//        [MGLMapboxEvents pushEvent:MGLEventTypeMapLoad withAttributes:@{}];
+        [[MMEEventsManager sharedManager] sendTurnstileEvent];
+        [[MMEEventsManager sharedManager] enqueueEventWithName:MMEEventTypeMapLoad];
     }
 }
 
