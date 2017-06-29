@@ -1,4 +1,6 @@
 #import "MGLMapboxEvents.h"
+#import <MapboxMobileEvents/MapboxMobileEvents.h>
+
 #import "NSProcessInfo+MGLAdditions.h"
 
 @interface MGLMapboxEvents ()
@@ -13,7 +15,6 @@
 @end
 
 @implementation MGLMapboxEvents {
-    NSString *_instanceID;
 //    UIBackgroundTaskIdentifier _backgroundTaskIdentifier;
 }
 
@@ -21,31 +22,9 @@
     if (self == [MGLMapboxEvents class]) {
         NSBundle *bundle = [NSBundle mainBundle];
         NSNumber *accountTypeNumber = [bundle objectForInfoDictionaryKey:@"MGLMapboxAccountType"];
-        [[NSUserDefaults standardUserDefaults] registerDefaults:@{
-             @"MGLMapboxAccountType": accountTypeNumber ?: @0,
-             @"MGLMapboxMetricsEnabled": @YES,
-             @"MGLMapboxMetricsDebugLoggingEnabled": @NO,
-         }];
+        [[NSUserDefaults standardUserDefaults] registerDefaults:@{@"MGLMapboxAccountType": accountTypeNumber ?: @0,
+                                                                  @"MGLMapboxMetricsEnabled": @YES}];
     }
-}
-
-+ (BOOL)isEnabled {
-#if TARGET_OS_SIMULATOR
-    return NO;
-#else
-    BOOL isLowPowerModeEnabled = NO;
-    if ([NSProcessInfo instancesRespondToSelector:@selector(isLowPowerModeEnabled)]) {
-        isLowPowerModeEnabled = [[NSProcessInfo processInfo] isLowPowerModeEnabled];
-    }
-    return ([[NSUserDefaults standardUserDefaults] boolForKey:@"MGLMapboxMetricsEnabled"] &&
-            [[NSUserDefaults standardUserDefaults] integerForKey:@"MGLMapboxAccountType"] == 0 &&
-            !isLowPowerModeEnabled);
-#endif
-}
-
-- (BOOL)debugLoggingEnabled {
-    return (self.canEnableDebugLogging &&
-            [[NSUserDefaults standardUserDefaults] boolForKey:@"MGLMapboxMetricsDebugLoggingEnabled"]);
 }
 
 - (instancetype) init {
@@ -94,10 +73,13 @@
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
-// TELEM_TODO: call pause / resume on telem lib
 - (void)userDefaultsDidChange:(NSNotification *)notification {
     dispatch_async(dispatch_get_main_queue(), ^{
-//        [self pauseOrResumeMetricsCollectionIfRequired];
+        BOOL metricsEnabled = [[NSUserDefaults standardUserDefaults] boolForKey:@"MGLMapboxMetricsEnabled"];
+        NSUInteger accountType = [[NSUserDefaults standardUserDefaults] integerForKey:@"MGLMapboxAccountType"];
+        [MMEEventsManager sharedManager].metricsEnabled = metricsEnabled;
+        [MMEEventsManager sharedManager].accountType = accountType;
+        [[MMEEventsManager sharedManager] pauseOrResumeMetricsCollectionIfRequired];
     });
 }
 

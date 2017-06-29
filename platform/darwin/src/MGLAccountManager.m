@@ -3,6 +3,7 @@
 #import "NSProcessInfo+MGLAdditions.h"
 
 #if TARGET_OS_IPHONE || TARGET_OS_SIMULATOR
+#import "MGLMapboxEvents.h"
 #import <MapboxMobileEvents/MapboxMobileEvents.h>
 
 #import "FABKitProtocol.h"
@@ -69,9 +70,12 @@
     [MGLAccountManager sharedManager].accessToken = accessToken;
 
 #if TARGET_OS_IPHONE || TARGET_OS_SIMULATOR
+    [MGLMapboxEvents sharedManager];
+    
     // Transform the legacy MGL specific settings to bool values for the metrics library
     [MMEEventsManager sharedManager].metricsEnabledInSimulator = [[NSUserDefaults standardUserDefaults] boolForKey:@"MGLMapboxMetricsEnabledInSimulator"];
     [MMEEventsManager sharedManager].debugLoggingEnabled = [[NSUserDefaults standardUserDefaults] boolForKey:@"MGLMapboxMetricsDebugLoggingEnabled"];
+    
     // TELEM_TODO: set correct user agent and host SDK version
     [[MMEEventsManager sharedManager] initializeWithAccessToken:accessToken userAgentBase:@"TelemLibTesting" hostSDKVersion:@"3.6.0-telem-test"];
 #endif
