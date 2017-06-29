@@ -1076,7 +1076,7 @@ public:
 
         [self validateLocationServices];
 
-//        [MGLMapboxEvents flush];
+        [[MMEEventsManager sharedManager] flush];
 
         _displayLink.paused = YES;
 
@@ -1258,9 +1258,9 @@ public:
         CLLocationCoordinate2D panCoordinate = [self convertPoint:pointInView toCoordinateFromView:pan.view];
         int zoom = round([self zoomLevel]);
         
-        NSDictionary *attributes = @{MGLEventKeyLatitude: @(panCoordinate.latitude),
-                                     MGLEventKeyLongitude: @(panCoordinate.longitude),
-                                     MGLEventKeyZoomLevel: @(zoom)};
+        NSDictionary *attributes = @{MMEEventKeyLatitude: @(panCoordinate.latitude),
+                                     MMEEventKeyLongitude: @(panCoordinate.longitude),
+                                     MMEEventKeyZoomLevel: @(zoom)};
         [[MMEEventsManager sharedManager] enqueueEventWithName:MMEEventTypeMapDragEnd attributes:attributes];
     }
 }
@@ -1866,11 +1866,11 @@ public:
     CGPoint pointInView = CGPointMake([recognizer locationInView:recognizer.view].x, [recognizer locationInView:recognizer.view].y);
     CLLocationCoordinate2D gestureCoordinate = [self convertPoint:pointInView toCoordinateFromView:recognizer.view];
     int zoom = round([self zoomLevel]);
-    NSDictionary *attributes = @{MGLEventKeyLatitude: @(gestureCoordinate.latitude),
-                                 MGLEventKeyLongitude: @(gestureCoordinate.longitude),
-                                 MGLEventKeyZoomLevel: @(zoom),
-                                 MGLEventKeyGestureID: gestureID};
-    [[MMEEventsManager sharedManager] enqueueEventWithName:MMEEventTypeMapTap attributes:attributes];    
+    NSDictionary *attributes = @{MMEEventKeyLatitude: @(gestureCoordinate.latitude),
+                                 MMEEventKeyLongitude: @(gestureCoordinate.longitude),
+                                 MMEEventKeyZoomLevel: @(zoom),
+                                 MMEEventKeyGestureID: gestureID};
+    [[MMEEventsManager sharedManager] enqueueEventWithName:MMEEventTypeMapTap attributes:attributes];
 }
 
 #pragma mark - Attribution -
@@ -1993,6 +1993,7 @@ public:
         BOOL attributionButtonWasHidden = [hiddenNumber boolValue];
         if (attributionButtonWasHidden)
         {
+            // TELEM_TODO: Reenable this
 //            [MGLMapboxEvents ensureMetricsOptoutExists];
         }
     }
