@@ -5,10 +5,6 @@
 
 @interface MGLMapboxEvents ()
 
-@property (nonatomic, copy) NSString *dateForDebugLogFile;
-@property (nonatomic) BOOL canEnableDebugLogging;
-@property (nonatomic, getter=isPaused) BOOL paused;
-@property (nonatomic) NS_MUTABLE_ARRAY_OF(MGLMapboxEventAttributes *) *eventQueue;
 @property (nonatomic) dispatch_queue_t serialQueue;
 @property (nonatomic) dispatch_queue_t debugLogSerialQueue;
 
@@ -33,19 +29,17 @@
 //        NSString *uniqueID = [[NSProcessInfo processInfo] globallyUniqueString];
 //        _serialQueue = dispatch_queue_create([[NSString stringWithFormat:@"%@.%@.events.serial", _appBundleId, uniqueID] UTF8String], DISPATCH_QUEUE_SERIAL);
 
-        // Events Control
-        _eventQueue = [[NSMutableArray alloc] init];
-
-        // Configure logging
-        if ([self isProbablyAppStoreBuild]) {
-            self.canEnableDebugLogging = NO;
-
-            if ([[NSUserDefaults standardUserDefaults] boolForKey:@"MGLMapboxMetricsDebugLoggingEnabled"]) {
-                NSLog(@"Telemetry logging is only enabled in non-app store builds.");
-            }
-        } else {
-            self.canEnableDebugLogging = YES;
-        }
+//        // Configure logging
+//        if ([self isProbablyAppStoreBuild]) {
+//            self.canEnableDebugLogging = NO;
+//            if ([[NSUserDefaults standardUserDefaults] boolForKey:@"MGLMapboxMetricsDebugLoggingEnabled"]) {
+//                NSLog(@"Telemetry logging is only enabled in non-app store builds.");
+//            }
+//        } else {
+//            self.canEnableDebugLogging = YES;
+//        }
+        
+        [self pauseOrResumeMetricsCollectionIfRequired];
 
         // Watch for changes to telemetry settings by the user
         // TELEM_TODO: set the telem instance account and enabled settings based on MGL specific user default values
@@ -75,12 +69,16 @@
 
 - (void)userDefaultsDidChange:(NSNotification *)notification {
     dispatch_async(dispatch_get_main_queue(), ^{
-        BOOL metricsEnabled = [[NSUserDefaults standardUserDefaults] boolForKey:@"MGLMapboxMetricsEnabled"];
-        NSUInteger accountType = [[NSUserDefaults standardUserDefaults] integerForKey:@"MGLMapboxAccountType"];
-        [MMEEventsManager sharedManager].metricsEnabled = metricsEnabled;
-        [MMEEventsManager sharedManager].accountType = accountType;
-        [[MMEEventsManager sharedManager] pauseOrResumeMetricsCollectionIfRequired];
+        [self pauseOrResumeMetricsCollectionIfRequired];
     });
+}
+
+- (void)pauseOrResumeMetricsCollectionIfRequired {
+    BOOL metricsEnabled = [[NSUserDefaults standardUserDefaults] boolForKey:@"MGLMapboxMetricsEnabled"];
+    NSUInteger accountType = [[NSUserDefaults standardUserDefaults] integerForKey:@"MGLMapboxAccountType"];
+    [MMEEventsManager sharedManager].metricsEnabled = metricsEnabled;
+    [MMEEventsManager sharedManager].accountType = accountType;
+    [[MMEEventsManager sharedManager] pauseOrResumeMetricsCollectionIfRequired];
 }
 
 + (void)ensureMetricsOptoutExists {
@@ -188,47 +186,5 @@
 //
 //    return [NSString stringWithFormat:@"Mapbox Telemetry event %@", event];
 //}
-
-- (BOOL)isProbablyAppStoreBuild {
-#if TARGET_IPHONE_SIMULATOR
-    return NO;
-#else
-    // BugshotKit by Marco Arment https://github.com/marcoarment/BugshotKit/
-    // Adapted from https://github.com/blindsightcorp/BSMobileProvision
-
-    NSString *binaryMobileProvision = [NSString stringWithContentsOfFile:[NSBundle.mainBundle pathForResource:@"embedded" ofType:@"mobileprovision"] encoding:NSISOLatin1StringEncoding error:NULL];
-    if (!binaryMobileProvision) {
-        return YES; // no provision
-    }
-
-    NSScanner *scanner = [NSScanner scannerWithString:binaryMobileProvision];
-    NSString *plistString;
-    if (![scanner scanUpToString:@"<plist" intoString:nil] || ! [scanner scanUpToString:@"</plist>" intoString:&plistString]) {
-        return YES; // no XML plist found in provision
-    }
-    plistString = [plistString stringByAppendingString:@"</plist>"];
-
-    NSData *plistdata_latin1 = [plistString dataUsingEncoding:NSISOLatin1StringEncoding];
-    NSError *error = nil;
-    NSDictionary *mobileProvision = [NSPropertyListSerialization propertyListWithData:plistdata_latin1 options:NSPropertyListImmutable format:NULL error:&error];
-    if (error) {
-        return YES; // unknown plist format
-    }
-
-    if (!mobileProvision || ! mobileProvision.count) {
-        return YES; // no entitlements
-    }
-
-    if (mobileProvision[@"ProvisionsAllDevices"]) {
-        return NO; // enterprise provisioning
-    }
-
-    if (mobileProvision[@"ProvisionedDevices"] && [mobileProvision[@"ProvisionedDevices"] count]) {
-        return NO; // development or ad-hoc
-    }
-
-    return YES; // expected development/enterprise/ad-hoc entitlements not found
-#endif
-}
 
 @end
