@@ -1993,8 +1993,7 @@ public:
         BOOL attributionButtonWasHidden = [hiddenNumber boolValue];
         if (attributionButtonWasHidden)
         {
-            // TELEM_TODO: Reenable this
-//            [MGLMapboxEvents ensureMetricsOptoutExists];
+            [MGLMapboxEvents ensureMetricsOptoutExists];
         }
     }
     else if ([keyPath isEqualToString:@"coordinate"] && [object conformsToProtocol:@protocol(MGLAnnotation)] && ![object isKindOfClass:[MGLMultiPoint class]])

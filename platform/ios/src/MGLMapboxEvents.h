@@ -10,6 +10,7 @@ typedef NS_MUTABLE_DICTIONARY_OF(NSString *, id) MGLMutableMapboxEventAttributes
 @interface MGLMapboxEvents : NSObject
 
 + (nullable instancetype)sharedManager;
++ (void)ensureMetricsOptoutExists;
 
 @end
 
