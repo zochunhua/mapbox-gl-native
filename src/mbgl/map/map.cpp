@@ -682,6 +682,35 @@ ViewportMode Map::getViewportMode() const {
     return impl->transform.getViewportMode();
 }
 
+#pragma mark - Projection mode
+
+void Map::setAxonometric(bool axonometric) {
+    impl->transform.setAxonometric(axonometric);
+    impl->onUpdate(Update::Repaint);
+}
+
+bool Map::getAxonometric() const {
+    return impl->transform.getAxonometric();
+}
+
+void Map::setXSkew(double xSkew) {
+    impl->transform.setXSkew(xSkew);
+    impl->onUpdate(Update::Repaint);
+}
+
+double Map::getXSkew() const {
+    return impl->transform.getXSkew();
+}
+
+void Map::setYSkew(double ySkew) {
+    impl->transform.setYSkew(ySkew);
+    impl->onUpdate(Update::Repaint);
+}
+
+double Map::getYSkew() const {
+    return impl->transform.getYSkew();
+}
+
 #pragma mark - Projection
 
 ScreenCoordinate Map::pixelForLatLng(const LatLng& latLng) const {
