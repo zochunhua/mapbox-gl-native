@@ -27,50 +27,8 @@ test('Map', function(t) {
         t.end();
     });
 
-    t.test('requires request property', function(t) {
-        var options = {};
-
-        t.throws(function() {
-            new mbgl.Map(options);
-        }, /Options object must have a 'request' method/);
-
-        options.request = 'test';
-        t.throws(function() {
-            new mbgl.Map(options);
-        }, /Options object must have a 'request' method/);
-
-        options.request = function() {};
-        t.doesNotThrow(function() {
-            var map = new mbgl.Map(options);
-            map.release();
-        });
-
-        t.end();
-    });
-
-    t.test('optional cancel property must be a function', function(t) {
-        var options = {
-            request: function() {}
-        };
-
-        options.cancel = 'test';
-        t.throws(function() {
-            new mbgl.Map(options);
-        }, /Options object 'cancel' property must be a function/);
-
-        options.cancel = function() {};
-        t.doesNotThrow(function() {
-            var map = new mbgl.Map(options);
-            map.release();
-        });
-
-        t.end();
-    });
-
-
     t.test('optional ratio property must be a number', function(t) {
         var options = {
-            request: function() {}
         };
 
         options.ratio = 'test';
@@ -81,7 +39,6 @@ test('Map', function(t) {
         options.ratio = 1.0;
         t.doesNotThrow(function() {
             var map = new mbgl.Map(options);
-            map.release();
         });
 
         t.end();
@@ -89,7 +46,6 @@ test('Map', function(t) {
 
     t.test('instanceof mbgl.Map', function(t) {
         var options = {
-            request: function() {},
             ratio: 1
         };
 
@@ -104,8 +60,6 @@ test('Map', function(t) {
             'load',
             'loaded',
             'render',
-            'release',
-            'cancel',
             'addSource',
             'addLayer',
             'removeLayer',
@@ -131,7 +85,6 @@ test('Map', function(t) {
 
     t.test('.addImage', function(t) {
         var options = {
-            request: function() {},
             ratio: 1
         };
 
@@ -142,7 +95,6 @@ test('Map', function(t) {
                 map.addImage();
             }, /Three arguments required/);
 
-            map.release();
             t.end();
         });
 
@@ -153,7 +105,6 @@ test('Map', function(t) {
                 map.addImage('foo', '', {});
             }, /Second argument must be an object/);
 
-            map.release();
             t.end();
         });
 
@@ -167,7 +118,6 @@ test('Map', function(t) {
                 });
             }, /height parameter required/);
 
-            map.release();
             t.end();
         });
 
@@ -181,7 +131,6 @@ test('Map', function(t) {
                 });
             }, /pixelRatio parameter required/);
 
-            map.release();
             t.end();
         });
 
@@ -196,7 +145,6 @@ test('Map', function(t) {
                 }, 'Image size does not match buffer size');
             });
 
-            map.release();
             t.end();
         });
 
@@ -211,7 +159,6 @@ test('Map', function(t) {
                 }, 'Max height and width is 1024');
             });
 
-            map.release();
             t.end();
         });
 
@@ -227,7 +174,6 @@ test('Map', function(t) {
                 }, 'Image size does not match buffer size');
             });
 
-            map.release();
             t.end();
         });
 
@@ -242,14 +188,12 @@ test('Map', function(t) {
                 });
             });
 
-            map.release();
             t.end();
         });
     });
 
     t.test('.removeImage', function(t) {
         var options = {
-            request: function() {},
             ratio: 1
         };
 
@@ -260,7 +204,6 @@ test('Map', function(t) {
                 map.removeImage();
             }, /One argument required/);
 
-            map.release();
             t.end();
         });
 
@@ -271,7 +214,6 @@ test('Map', function(t) {
                 map.removeImage({});
             }, /First argument must be a string/);
 
-            map.release();
             t.end();
         });
 
@@ -282,14 +224,12 @@ test('Map', function(t) {
                 map.removeImage('fooBar');
             });
 
-            map.release();
             t.end();
         });
     });
 
     t.test('.load', function(t) {
         var options = {
-            request: function() {},
             ratio: 1
         };
 
@@ -300,7 +240,6 @@ test('Map', function(t) {
                 map.load();
             }, /Requires a map style as first argument/);
 
-            map.release();
             t.end();
         });
 
@@ -315,7 +254,6 @@ test('Map', function(t) {
                 map.load('""');
             }, /Failed to parse style: style must be an object/);
 
-            map.release();
             t.end();
         });
 
@@ -327,7 +265,6 @@ test('Map', function(t) {
                 t.equal(msg.class, 'ParseStyle');
                 t.ok(msg.text.match(/Invalid value/));
 
-                map.release();
                 t.end();
             });
 
@@ -343,7 +280,6 @@ test('Map', function(t) {
                 map.load('{}');
             });
 
-            map.release();
             t.end();
         });
 
@@ -354,7 +290,6 @@ test('Map', function(t) {
                 map.load(style);
             });
 
-            map.release();
             t.end();
         });
 
@@ -365,22 +300,17 @@ test('Map', function(t) {
                 map.load(JSON.stringify(style));
             });
 
-            map.release();
             t.end();
         });
 
         t.test('does not immediately trigger any tile loads', function(t) {
             var map = new mbgl.Map({
-                request: function(req) {
-                    t.fail('unexpected request ' + req.url);
-                },
                 ratio: 1
             });
 
             map.load(style);
 
             setTimeout(function() {
-                map.release();
                 t.end();
             }, 100);
         });
@@ -388,11 +318,6 @@ test('Map', function(t) {
 
     t.test('.render', function(t) {
         var options = {
-            request: function(req, callback) {
-                fs.readFile(path.join(__dirname, '..', req.url), function(err, data) {
-                    callback(err, { data: data });
-                });
-            },
             ratio: 1
         };
 
@@ -407,7 +332,6 @@ test('Map', function(t) {
                 map.render('invalid');
             }, /First argument must be an options object/);
 
-            map.release();
             t.end();
         });
 
@@ -422,7 +346,6 @@ test('Map', function(t) {
                 map.render({}, 'invalid');
             }, /Second argument must be a callback function/);
 
-            map.release();
             t.end();
         });
 
@@ -433,7 +356,6 @@ test('Map', function(t) {
                 map.render({}, function() {});
             }, /Style is not loaded/);
 
-            map.release();
             t.end();
         });
 
@@ -450,8 +372,6 @@ test('Map', function(t) {
             });
             map.load(style);
             map.render({ zoom: 1 }, function(err, data) {
-                map.release();
-
                 t.ok(err, 'returns error');
                 t.end();
             });
@@ -461,22 +381,9 @@ test('Map', function(t) {
             var map = new mbgl.Map(options);
             map.load(style);
             map.render({ zoom: 1 }, function(err, data) {
-                map.release();
-
                 t.ok(err, 'returns error');
                 t.end();
             });
-        });
-
-        t.test('double release', function(t) {
-            var map = new mbgl.Map(options);
-            map.release();
-
-            t.throws(function() {
-                map.release();
-            }, /Map resources have already been released/);
-
-            t.end();
         });
 
         t.test('returns an image', function(t) {
@@ -484,7 +391,6 @@ test('Map', function(t) {
             map.load(style);
             map.render({}, function(err, pixels) {
                 t.error(err);
-                map.release();
                 t.ok(pixels);
                 t.ok(pixels instanceof Buffer);
                 t.equal(pixels.length, 512 * 512 * 4)
@@ -506,7 +412,6 @@ test('Map', function(t) {
 
                     t.ok(true, 'render @ ' + ((+new Date) - start) + 'ms');
                     if (++completed === remaining) {
-                        map.release();
                         t.end();
                     } else {
                         render();
@@ -526,7 +431,6 @@ test('Map', function(t) {
                 map.render({}, function() {});
             }, /Map is currently rendering an image/);
 
-            map.release();
             t.end();
         });
 
@@ -584,7 +488,6 @@ test('Map', function(t) {
             });
             map.load(style);
             map.render({ zoom: 1 }, function(err, data) {
-                map.release();
                 t.ok(err, 'returns error');
                 t.equal(err.message, 'request error');
                 t.end();
@@ -592,14 +495,9 @@ test('Map', function(t) {
         });
 
         t.test('returning no content for a tile', function(t) {
-            var map = new mbgl.Map({
-                request: function(req, callback) {
-                    callback();
-                },
-            });
+            var map = new mbgl.Map({});
             map.load(style);
             map.render({ zoom: 1 }, function(err, data) {
-                map.release();
                 t.ok(data, 'no error');
                 t.end();
             });
@@ -607,13 +505,11 @@ test('Map', function(t) {
 
         t.test('not holding references', function(t) {
             var options = {
-                request: function() {},
                 ratio: 1
             };
 
-            // We explicitly don't call release. mbgl.Map should
-            // not hold any reference to the node's main loop and
-            // prevent the test from exit.
+            // mbgl.Map should not hold any reference to the
+            // node's main loop and prevent the test from exit.
             var map1 = new mbgl.Map(options);
             var map2 = new mbgl.Map(options);
             var map3 = new mbgl.Map(options);

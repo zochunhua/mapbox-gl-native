@@ -18,10 +18,7 @@ test('Memory', function(t) {
     var lastHeapSize = process.memoryUsage()['heapUsed'];
 
     var options = {
-        request: function(req, callback) {
-            callback(null, { data: mockfs.dataForRequest(req) });
-        },
-        ratio: testParams.ratio,
+        ratio: testParams.ratio
     };
 
     var mapPool = []

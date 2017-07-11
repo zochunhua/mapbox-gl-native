@@ -1,7 +1,6 @@
 'use strict';
 
 var mbgl = require('../../../lib/mapbox_gl_native');
-var request = require('request');
 var PNG = require('pngjs').PNG;
 var fs = require('fs');
 var path = require('path');
@@ -13,19 +12,6 @@ mbgl.on('message', function(msg) {
 module.exports = function (style, options, callback) {
     var map = new mbgl.Map({
         ratio: options.pixelRatio,
-        request: function(req, callback) {
-            request(req.url, {encoding: null}, function (err, response, body) {
-                if (err) {
-                    callback(err);
-                } else if (response.statusCode == 404) {
-                    callback();
-                } else if (response.statusCode != 200) {
-                    callback(new Error(response.statusMessage));
-                } else {
-                    callback(null, {data: body});
-                }
-            });
-        }
     });
 
     var timedOut = false;
@@ -53,7 +39,6 @@ module.exports = function (style, options, callback) {
             var results = options.queryGeometry ?
               map.queryRenderedFeatures(options.queryGeometry, options.queryOptions || {}) :
               [];
-            map.release();
             if (timedOut) return;
             clearTimeout(watchdog);
             callback(err, pixels, results.map(prepareFeatures));
