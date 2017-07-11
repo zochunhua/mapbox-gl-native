@@ -1,7 +1,7 @@
 'use strict';
 
 var mockfs = require('./mockfs');
-var mbgl = require('../index');
+var mbgl = require('../../../lib/mapbox_gl_native');
 var test = require('tape');
 
 var firstRequest = "mapbox://sprites/mapbox/streets-v9@2x.json";

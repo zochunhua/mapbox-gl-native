@@ -1,6 +1,6 @@
 'use strict';
 
-var mbgl = require('../index');
+var mbgl = require('../../../lib/mapbox_gl_native');
 var request = require('request');
 var PNG = require('pngjs').PNG;
 var fs = require('fs');

@@ -1,15 +1,13 @@
 'use strict';
 
 var test = require('tape');
-var mbgl = require('../../index');
+var mbgl = require('../../../../lib/mapbox_gl_native');
 var fs = require('fs');
 var path = require('path');
 var style = require('../fixtures/style.json');
 
 test('Map', function(t) {
-    // This test is skipped because of the req.respond shim in index.js
-    // which will always call new mbgl.Map()
-    t.skip('must be constructed with new', function(t) {
+    t.test('must be constructed with new', function(t) {
         t.throws(function() {
             mbgl.Map();
         }, /Use the new operator to create new Map objects/);
