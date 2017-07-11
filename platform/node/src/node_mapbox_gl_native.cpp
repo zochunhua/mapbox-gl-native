@@ -9,7 +9,6 @@
 
 #include "node_map.hpp"
 #include "node_logging.hpp"
-#include "node_request.hpp"
 
 void RegisterModule(v8::Local<v8::Object> target, v8::Local<v8::Object> module) {
     // This has the effect of:
@@ -19,42 +18,6 @@ void RegisterModule(v8::Local<v8::Object> target, v8::Local<v8::Object> module) 
     nodeRunLoop.stop();
 
     node_mbgl::NodeMap::Init(target);
-    node_mbgl::NodeRequest::Init();
-
-    // Exports Resource constants.
-    v8::Local<v8::Object> resource = Nan::New<v8::Object>();
-
-    Nan::Set(resource,
-        Nan::New("Unknown").ToLocalChecked(),
-        Nan::New(mbgl::Resource::Unknown));
-
-    Nan::Set(resource,
-        Nan::New("Style").ToLocalChecked(),
-        Nan::New(mbgl::Resource::Style));
-
-    Nan::Set(resource,
-        Nan::New("Source").ToLocalChecked(),
-        Nan::New(mbgl::Resource::Source));
-
-    Nan::Set(resource,
-        Nan::New("Tile").ToLocalChecked(),
-        Nan::New(mbgl::Resource::Tile));
-
-    Nan::Set(resource,
-        Nan::New("Glyphs").ToLocalChecked(),
-        Nan::New(mbgl::Resource::Glyphs));
-
-    Nan::Set(resource,
-        Nan::New("SpriteImage").ToLocalChecked(),
-        Nan::New(mbgl::Resource::SpriteImage));
-
-    Nan::Set(resource,
-        Nan::New("SpriteJSON").ToLocalChecked(),
-        Nan::New(mbgl::Resource::SpriteJSON));
-
-    Nan::Set(target,
-        Nan::New("Resource").ToLocalChecked(),
-        resource);
 
     // Make the exported object inherit from EventEmitter
     v8::Local<v8::Function> require = Nan::Get(module,

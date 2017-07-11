@@ -1,5 +1,4 @@
 #include "node_map.hpp"
-#include "node_request.hpp"
 #include "node_feature.hpp"
 #include "node_conversion.hpp"
 #include "node_geojson.hpp"
@@ -12,7 +11,9 @@
 #include <mbgl/style/style.hpp>
 #include <mbgl/style/image.hpp>
 #include <mbgl/map/backend_scope.hpp>
+#include <mbgl/map/map.hpp>
 #include <mbgl/map/query.hpp>
+#include <mbgl/storage/default_file_source.hpp>
 #include <mbgl/util/premultiply.hpp>
 
 #include <unistd.h>
@@ -59,7 +60,6 @@ void NodeMap::Init(v8::Local<v8::Object> target) {
     Nan::SetPrototypeMethod(tpl, "loaded", Loaded);
     Nan::SetPrototypeMethod(tpl, "render", Render);
     Nan::SetPrototypeMethod(tpl, "release", Release);
-    Nan::SetPrototypeMethod(tpl, "cancel", Cancel);
 
     Nan::SetPrototypeMethod(tpl, "addSource", AddSource);
     Nan::SetPrototypeMethod(tpl, "addLayer", AddLayer);
@@ -85,38 +85,17 @@ void NodeMap::Init(v8::Local<v8::Object> target) {
 }
 
 /**
- * A request object, given to the `request` handler of a map, is an
- * encapsulation of a URL and type of a resource that the map asks you to load.
- *
- * The `kind` property is one of
- *
- *     "Unknown": 0,
- *     "Style": 1,
- *     "Source": 2,
- *     "Tile": 3,
- *     "Glyphs": 4,
- *     "SpriteImage": 5,
- *     "SpriteJSON": 6
- *
- * @typedef
- * @name Request
- * @property {string} url
- * @property {number} kind
- */
-
-/**
  * Mapbox GL object: this object loads stylesheets and renders them into
  * images.
  *
  * @class
  * @name Map
  * @param {Object} options
- * @param {Function} options.request a method used to request resources
  * over the internet
  * @param {Function} [options.cancel]
  * @param {number} options.ratio pixel ratio
  * @example
- * var map = new mbgl.Map({ request: function() {} });
+ * var map = new mbgl.Map({ ratio: 1 });
  * map.load(require('./test/fixtures/style.json'));
  * map.render({}, function(err, image) {
  *     if (err) throw err;
@@ -133,18 +112,6 @@ void NodeMap::New(const Nan::FunctionCallbackInfo<v8::Value>& info) {
     }
 
     auto options = Nan::To<v8::Object>(info[0]).ToLocalChecked();
-
-    // Check that 'request' is set. If 'cancel' is set it must be a
-    // function and if 'ratio' is set it must be a number.
-    if (!Nan::Has(options, Nan::New("request").ToLocalChecked()).FromJust()
-     || !Nan::Get(options, Nan::New("request").ToLocalChecked()).ToLocalChecked()->IsFunction()) {
-        return Nan::ThrowError("Options object must have a 'request' method");
-    }
-
-    if (Nan::Has(options, Nan::New("cancel").ToLocalChecked()).FromJust()
-     && !Nan::Get(options, Nan::New("cancel").ToLocalChecked()).ToLocalChecked()->IsFunction()) {
-        return Nan::ThrowError("Options object 'cancel' property must be a function");
-    }
 
     if (Nan::Has(options, Nan::New("ratio").ToLocalChecked()).FromJust()
      && !Nan::Get(options, Nan::New("ratio").ToLocalChecked()).ToLocalChecked()->IsNumber()) {
@@ -504,42 +471,6 @@ void NodeMap::release() {
     });
 
     map.reset();
-}
-
-/**
- * Cancel an ongoing render request. The callback will be called with
- * the error set to "Canceled". Will throw if no rendering is in progress.
- * @name cancel
- * @returns {undefined}
- */
-void NodeMap::Cancel(const Nan::FunctionCallbackInfo<v8::Value>& info) {
-    auto nodeMap = Nan::ObjectWrap::Unwrap<NodeMap>(info.Holder());
-
-    if (!nodeMap->map) return Nan::ThrowError(releasedMessage());
-    if (!nodeMap->callback) return Nan::ThrowError("No render in progress");
-
-    try {
-        nodeMap->cancel();
-    } catch (const std::exception &ex) {
-        return Nan::ThrowError(ex.what());
-    }
-
-    info.GetReturnValue().SetUndefined();
-}
-
-void NodeMap::cancel() {
-    auto style = map->getStyle().getJSON();
-
-    map = std::make_unique<mbgl::Map>(backend, mbgl::Size{ 256, 256 },
-            pixelRatio, *this, threadpool, mbgl::MapMode::Still);
-
-    // FIXME: Reload the style after recreating the map. We need to find
-    // a better way of canceling an ongoing rendering on the core level
-    // without resetting the map, which is way too expensive.
-    map->getStyle().loadJSON(style);
-
-    error = std::make_exception_ptr(std::runtime_error("Canceled"));
-    renderFinished();
 }
 
 void NodeMap::AddSource(const Nan::FunctionCallbackInfo<v8::Value>& info) {
@@ -982,10 +913,11 @@ NodeMap::NodeMap(v8::Local<v8::Object> options)
                            ->NumberValue()
                      : 1.0;
       }()),
+      fileSource(std::make_unique<mbgl::DefaultFileSource>(":memory:", ".")),
       map(std::make_unique<mbgl::Map>(backend,
                                       mbgl::Size{ 256, 256 },
                                       pixelRatio,
-                                      *this,
+                                      *fileSource,
                                       threadpool,
                                       mbgl::MapMode::Still)),
       async(new uv_async_t) {
@@ -1001,25 +933,6 @@ NodeMap::NodeMap(v8::Local<v8::Object> options)
 
 NodeMap::~NodeMap() {
     if (map) release();
-}
-
-std::unique_ptr<mbgl::AsyncRequest> NodeMap::request(const mbgl::Resource& resource, mbgl::FileSource::Callback callback_) {
-    Nan::HandleScope scope;
-
-    v8::Local<v8::Value> argv[] = {
-        Nan::New<v8::External>(this),
-        Nan::New<v8::External>(&callback_)
-    };
-
-    auto instance = Nan::New(NodeRequest::constructor)->NewInstance(2, argv);
-
-    Nan::Set(instance, Nan::New("url").ToLocalChecked(), Nan::New(resource.url).ToLocalChecked());
-    Nan::Set(instance, Nan::New("kind").ToLocalChecked(), Nan::New<v8::Integer>(resource.kind));
-
-    auto request = Nan::ObjectWrap::Unwrap<NodeRequest>(instance);
-    request->Execute();
-
-    return std::make_unique<NodeRequest::NodeAsyncRequest>(request);
 }
 
 } // namespace node_mbgl

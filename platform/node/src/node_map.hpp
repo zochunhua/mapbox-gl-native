@@ -2,8 +2,6 @@
 
 #include "node_thread_pool.hpp"
 
-#include <mbgl/map/map.hpp>
-#include <mbgl/storage/file_source.hpp>
 #include <mbgl/gl/headless_backend.hpp>
 #include <mbgl/gl/offscreen_view.hpp>
 
@@ -15,6 +13,13 @@
 #include <nan.h>
 #pragma GCC diagnostic pop
 
+namespace mbgl {
+
+class Map;
+class DefaultFileSource;
+
+}
+
 namespace node_mbgl {
 
 class NodeBackend : public mbgl::HeadlessBackend {
@@ -23,8 +28,7 @@ public:
     void onDidFailLoadingMap(std::exception_ptr) final;
 };
 
-class NodeMap : public Nan::ObjectWrap,
-                public mbgl::FileSource {
+class NodeMap : public Nan::ObjectWrap {
 public:
     struct RenderOptions;
     class RenderWorker;
@@ -61,16 +65,13 @@ public:
     void renderFinished();
 
     void release();
-    void cancel();
-
     static RenderOptions ParseOptions(v8::Local<v8::Object>);
-
-    std::unique_ptr<mbgl::AsyncRequest> request(const mbgl::Resource&, mbgl::FileSource::Callback);
 
     const float pixelRatio;
     NodeBackend backend;
     std::unique_ptr<mbgl::OffscreenView> view;
     NodeThreadPool threadpool;
+    std::unique_ptr<mbgl::DefaultFileSource> fileSource;
     std::unique_ptr<mbgl::Map> map;
 
     std::exception_ptr error;
