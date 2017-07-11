@@ -34,7 +34,7 @@ public:
     class RenderWorker;
 
     NodeMap(v8::Local<v8::Object>);
-    ~NodeMap();
+    virtual ~NodeMap() = default;
 
     static Nan::Persistent<v8::Function> constructor;
 
@@ -64,7 +64,6 @@ public:
     void startRender(RenderOptions options);
     void renderFinished();
 
-    void release();
     static RenderOptions ParseOptions(v8::Local<v8::Object>);
 
     const float pixelRatio;
