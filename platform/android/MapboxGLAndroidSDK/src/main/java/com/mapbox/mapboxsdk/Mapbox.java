@@ -9,11 +9,19 @@ import android.text.TextUtils;
 
 import com.mapbox.mapboxsdk.constants.MapboxConstants;
 import com.mapbox.mapboxsdk.exceptions.MapboxConfigurationException;
-import com.mapbox.mapboxsdk.location.LocationSource;
 import com.mapbox.mapboxsdk.net.ConnectivityReceiver;
 import com.mapbox.services.android.telemetry.MapboxTelemetry;
+import com.mapbox.services.android.telemetry.location.AndroidLocationSourceProvider;
+import com.mapbox.services.android.telemetry.location.ClasspathChecker;
+import com.mapbox.services.android.telemetry.location.GoogleLocationSourceProvider;
 import com.mapbox.services.android.telemetry.location.LocationEngine;
 import com.mapbox.services.android.telemetry.location.LocationEnginePriority;
+import com.mapbox.services.android.telemetry.location.LocationSourceChain;
+import com.mapbox.services.android.telemetry.location.LocationSourceProvider;
+import com.mapbox.services.android.telemetry.location.LostLocationSourceProvider;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * The entry point to initialize the Mapbox Android SDK.
@@ -30,7 +38,7 @@ public final class Mapbox {
   private Context context;
   private String accessToken;
   private Boolean connected;
-  private LocationSource locationSource;
+  private LocationEngine locationSource;
 
   /**
    * Get an instance of Mapbox.
@@ -46,17 +54,19 @@ public final class Mapbox {
   public static synchronized Mapbox getInstance(@NonNull Context context, @NonNull String accessToken) {
     if (INSTANCE == null) {
       Context appContext = context.getApplicationContext();
-      INSTANCE = new Mapbox(appContext, accessToken, new LocationSource(appContext));
-      LocationEngine locationEngine = new LocationSource(appContext);
-      locationEngine.setPriority(LocationEnginePriority.NO_POWER);
+      List<LocationSourceChain> locationSources = initLocationSources();
+      LocationSourceProvider locationSourceProvider = new LocationSourceProvider(locationSources);
+      LocationEngine locationSource = locationSourceProvider.supply(context);
+      INSTANCE = new Mapbox(appContext, accessToken, locationSource);
+      locationSource.setPriority(LocationEnginePriority.NO_POWER);
       MapboxTelemetry.getInstance().initialize(
-        appContext, accessToken, BuildConfig.MAPBOX_EVENTS_USER_AGENT, locationEngine);
+        appContext, accessToken, BuildConfig.MAPBOX_EVENTS_USER_AGENT, locationSource);
       ConnectivityReceiver.instance(appContext);
     }
     return INSTANCE;
   }
 
-  Mapbox(@NonNull Context context, @NonNull String accessToken, LocationSource locationSource) {
+  Mapbox(@NonNull Context context, @NonNull String accessToken, LocationEngine locationSource) {
     this.context = context;
     this.accessToken = accessToken;
     this.locationSource = locationSource;
@@ -71,6 +81,16 @@ public final class Mapbox {
     validateMapbox();
     validateAccessToken();
     return INSTANCE.accessToken;
+  }
+
+  private static List<LocationSourceChain> initLocationSources() {
+    ClasspathChecker classpathChecker = new ClasspathChecker();
+    List<LocationSourceChain> locationSources = new ArrayList<>();
+    locationSources.add(new GoogleLocationSourceProvider(classpathChecker));
+    locationSources.add(new LostLocationSourceProvider(classpathChecker));
+    locationSources.add(new AndroidLocationSourceProvider());
+
+    return locationSources;
   }
 
   /**
@@ -133,7 +153,7 @@ public final class Mapbox {
     return (activeNetwork != null && activeNetwork.isConnected());
   }
 
-  public static LocationSource getLocationSource() {
+  public static LocationEngine getLocationSource() {
     return INSTANCE.locationSource;
   }
 }
