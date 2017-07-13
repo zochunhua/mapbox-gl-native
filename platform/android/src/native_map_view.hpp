@@ -63,10 +63,7 @@ public:
 
     void updateAssumedState() override;
 
-    // Deprecated //
-    void notifyMapChange(mbgl::MapChange);
-
-    // mbgl::RendererBackend (mbgl::MapObserver) //
+    // mbgl::MapObserver
     void onCameraWillChange(MapObserver::CameraChangeMode) override;
     void onCameraIsChanging() override;
     void onCameraDidChange(MapObserver::CameraChangeMode) override;

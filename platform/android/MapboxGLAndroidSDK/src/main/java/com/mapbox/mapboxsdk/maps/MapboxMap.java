@@ -182,21 +182,36 @@ public final class MapboxMap {
   }
 
   /**
-   * Called when the region is changing or has changed.
+   * Called when the camera has changed or triggered manually for updating components.
    */
-  void onUpdateRegionChange() {
+  void onCameraChange() {
+    Timber.e("OnCamerChange");
     trackingSettings.update();
     annotationManager.update();
   }
 
   /**
+   * Called when the region did change animated.
+   */
+  void onCameraDidChangeAnimated() {
+    transform.onCameraDidChangeAnimated();
+  }
+
+  /**
    * Called when the map frame is fully rendered.
    */
-  void onUpdateFullyRendered() {
+  void onDidFinishRenderingFrame() {
     CameraPosition cameraPosition = transform.invalidateCameraPosition();
     if (cameraPosition != null) {
       uiSettings.update(cameraPosition);
     }
+  }
+
+  /**
+   *
+   */
+  void onDidFinishRenderingFrameFully() {
+    annotationManager.getMarkerViewManager().onDidFinishRenderingFrameFully();
   }
 
   // Style

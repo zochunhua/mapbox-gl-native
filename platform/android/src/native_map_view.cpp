@@ -176,80 +176,176 @@ void NativeMapView::invalidate() {
 }
 
 /**
- * From mbgl::RendererBackend. Callback to java NativeMapView#onMapChanged(int).
+ * From mbgl::MapObserver. Callback to java NativeMapView#onCameraWillChange().
  *
- * May be called from any thread
+ * Called from the main thread
  */
-void NativeMapView::notifyMapChange(mbgl::MapChange change) {
-    assert(vm != nullptr);
-
-    android::UniqueEnv _env = android::AttachEnv();
-    static auto onMapChanged = javaClass.GetMethod<void (int)>(*_env, "onMapChanged");
-    javaPeer->Call(*_env, onMapChanged, (int) change);
-}
-
 void NativeMapView::onCameraWillChange(MapObserver::CameraChangeMode mode) {
-    if (mode == MapObserver::CameraChangeMode::Immediate) {
-        notifyMapChange(MapChange::MapChangeRegionWillChange);
-    } else {
-        notifyMapChange(MapChange::MapChangeRegionWillChangeAnimated);
+    JNIEnv* env = nullptr;
+    int resultCode = vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6);
+    if(resultCode == JNI_OK) {
+        static auto onCameraWillChange = javaClass.GetMethod<void(jboolean)>(*env, "onCameraWillChange");
+        javaPeer->Call(*env, onCameraWillChange, (jboolean) (mode == MapObserver::CameraChangeMode::Animated));
     }
 }
 
+/**
+ * From mbgl::MapObserver. Callback to java NativeMapView#onCameraIsChanging().
+ *
+ * Called from the main thread
+ */
 void NativeMapView::onCameraIsChanging() {
-    notifyMapChange(MapChange::MapChangeRegionIsChanging);
+    JNIEnv* env = nullptr;
+    int resultCode = vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6);
+    if(resultCode == JNI_OK) {
+        static auto onCameraIsChanging = javaClass.GetMethod<void()>(*env, "onCameraIsChanging");
+        javaPeer->Call(*env, onCameraIsChanging);
+    }
 }
 
+/**
+ * From mbgl::MapObserver. Callback to java NativeMapView#onCameraDidChange().
+ *
+ * Called from the map thread (main thread)
+ */
 void NativeMapView::onCameraDidChange(MapObserver::CameraChangeMode mode) {
-    if (mode == MapObserver::CameraChangeMode::Immediate) {
-        notifyMapChange(MapChange::MapChangeRegionDidChange);
-    } else {
-        notifyMapChange(MapChange::MapChangeRegionDidChangeAnimated);
+    JNIEnv* env = nullptr;
+    int resultCode = vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6);
+    if(resultCode == JNI_OK) {
+        static auto onCameraDidChange = javaClass.GetMethod<void(jboolean)>(*env, "onCameraDidChange");
+        javaPeer->Call(*env, onCameraDidChange, (jboolean) (mode == MapObserver::CameraChangeMode::Animated));
     }
 }
 
+/**
+ * From mbgl::MapObserver. Callback to java NativeMapView#onWillStartLoadingMap().
+ *
+ * Called from the map thread (main thread)
+ */
 void NativeMapView::onWillStartLoadingMap() {
-    notifyMapChange(MapChange::MapChangeWillStartLoadingMap);
+    JNIEnv* env = nullptr;
+    int resultCode = vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6);
+    if(resultCode == JNI_OK) {
+        static auto onWillStartLoadingMap = javaClass.GetMethod<void()>(*env, "onWillStartLoadingMap");
+        javaPeer->Call(*env, onWillStartLoadingMap);
+    }
 }
 
+/**
+ * From mbgl::MapObserver. Callback to java NativeMapView#onDidFinishLoadingMap().
+ *
+ * Called from the map thread (main thread)
+ */
 void NativeMapView::onDidFinishLoadingMap() {
-    notifyMapChange(MapChange::MapChangeDidFinishLoadingMap);
+    JNIEnv* env = nullptr;
+    int resultCode = vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6);
+    if(resultCode == JNI_OK) {
+        static auto onDidFinishLoadingMap = javaClass.GetMethod<void()>(*env, "onDidFinishLoadingMap");
+        javaPeer->Call(*env, onDidFinishLoadingMap);
+    }
 }
 
-void NativeMapView::onDidFailLoadingMap(std::exception_ptr) {
-    notifyMapChange(MapChange::MapChangeDidFailLoadingMap);
+/**
+ * From mbgl::MapObserver. Callback to java NativeMapView#onDidFailLoadingMap().
+ *
+ * Called from the map thread (main thread)
+ */
+void NativeMapView::onDidFailLoadingMap(std::exception_ptr eptr) {
+    assert(vm != nullptr);
+    try {
+        if(eptr) {
+            std::rethrow_exception(eptr);
+        }
+    } catch (const std::exception &e) {
+        std::string errorMessage = e.what();
+        android::UniqueEnv _env = android::AttachEnv();
+        static auto onDidFailLoadingMap = javaClass.GetMethod<void(jni::String)>(*_env, "onDidFailLoadingMap");
+        javaPeer->Call(*_env, onDidFailLoadingMap, jni::Make<jni::String>(*_env, errorMessage));
+    }
 }
 
+/**
+ * From mbgl::MapObserver. Callback to java NativeMapView#onWillStartRenderingFrame().
+ *
+ * Called from the map thread (main thread)
+ */
 void NativeMapView::onWillStartRenderingFrame() {
-    notifyMapChange(MapChange::MapChangeWillStartRenderingFrame);
+    JNIEnv* env = nullptr;
+    int resultCode = vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6);
+    if(resultCode == JNI_OK) {
+        static auto onWillStartRenderingFrame = javaClass.GetMethod<void()>(*env, "onWillStartRenderingFrame");
+        javaPeer->Call(*env, onWillStartRenderingFrame);
+    }
 }
 
+/**
+ * From mbgl::MapObserver. Callback to java NativeMapView#onDidFinishRenderingFrame().
+ *
+ * Called from the map thread (main thread)
+ */
 void NativeMapView::onDidFinishRenderingFrame(MapObserver::RenderMode mode) {
-    if (mode == MapObserver::RenderMode::Partial) {
-        notifyMapChange(MapChange::MapChangeDidFinishRenderingFrame);
-    } else {
-        notifyMapChange(MapChange::MapChangeDidFinishRenderingFrameFullyRendered);
+    JNIEnv* env = nullptr;
+    int resultCode = vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6);
+    if(resultCode == JNI_OK) {
+        static auto onDidFinishRenderingFrame = javaClass.GetMethod<void(jboolean)>(*env, "onDidFinishRenderingFrame");
+        javaPeer->Call(*env, onDidFinishRenderingFrame, (jboolean) (mode == MapObserver::RenderMode::Partial));
     }
 }
 
+/**
+ * From mbgl::MapObserver. Callback to java NativeMapView#onWillStartRenderingMap().
+ *
+ * Called from the map thread (main thread)
+ */
 void NativeMapView::onWillStartRenderingMap() {
-    notifyMapChange(MapChange::MapChangeWillStartRenderingMap);
-}
-
-void NativeMapView::onDidFinishRenderingMap(MapObserver::RenderMode mode) {
-    if (mode == MapObserver::RenderMode::Partial) {
-        notifyMapChange(MapChange::MapChangeDidFinishRenderingMap);
-    } else {
-        notifyMapChange(MapChange::MapChangeDidFinishRenderingMapFullyRendered);
+    JNIEnv* env = nullptr;
+    int resultCode = vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6);
+    if(resultCode == JNI_OK) {
+        static auto onWillStartRenderingMap = javaClass.GetMethod<void()>(*env, "onWillStartRenderingMap");
+        javaPeer->Call(*env, onWillStartRenderingMap);
     }
 }
 
-void NativeMapView::onDidFinishLoadingStyle() {
-    notifyMapChange(MapChange::MapChangeDidFinishLoadingStyle);
+/**
+ * From mbgl::MapObserver. Callback to java NativeMapView#onDidFinishRenderingMap().
+ *
+ * Called from the map thread (main thread)
+ */
+void NativeMapView::onDidFinishRenderingMap(MapObserver::RenderMode mode) {
+    JNIEnv* env = nullptr;
+    int resultCode = vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6);
+    if(resultCode == JNI_OK) {
+        static auto onDidFinishRenderingMap = javaClass.GetMethod<void(jni::jboolean)>(*env, "onDidFinishRenderingMap");
+        javaPeer->Call(*env, onDidFinishRenderingMap, (jboolean) (mode == MapObserver::RenderMode::Partial));
+    }
 }
 
-void NativeMapView::onSourceChanged(mbgl::style::Source&) {
-    notifyMapChange(MapChange::MapChangeSourceDidChange);
+/**
+ * From mbgl::MapObserver. Callback to java NativeMapView#onDidFinishLoadingStyle().
+ *
+ * Called from the map thread (main thread)
+ */
+void NativeMapView::onDidFinishLoadingStyle() {
+    JNIEnv* env = nullptr;
+    int resultCode = vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6);
+    if(resultCode == JNI_OK) {
+        static auto onDidFinishLoadingStyle = javaClass.GetMethod<void()>(*env, "onDidFinishLoadingStyle");
+        javaPeer->Call(*env, onDidFinishLoadingStyle);
+    }
+}
+
+/**
+ * From mbgl::MapObserver. Callback to java NativeMapView#onSourceChanged().
+ *
+ * Called from the map thread (main thread)
+ */
+void NativeMapView::onSourceChanged(mbgl::style::Source& source) {
+    JNIEnv* env = nullptr;
+    int resultCode = vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6);
+    if(resultCode == JNI_OK) {
+        static auto onSourceChanged = javaClass.GetMethod<void(jni::String)>(*env, "onSourceChanged");
+        javaPeer->Call(*env, onSourceChanged, jni::Make<jni::String>(*env, source.getID()));
+    }
 }
 
 // JNI Methods //
