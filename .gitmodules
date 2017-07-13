@@ -10,6 +10,3 @@
 [submodule "mapbox-gl-js"]
 	path = mapbox-gl-js
 	url = https://github.com/mapbox/mapbox-gl-js.git
-[submodule "platform/ios/vendor/mapbox-telemetry-ios"]
-	path = platform/ios/vendor/mapbox-telemetry-ios
-	url = /Users/boundsj/workspace/mobile/mapbox-telemetry-ios
