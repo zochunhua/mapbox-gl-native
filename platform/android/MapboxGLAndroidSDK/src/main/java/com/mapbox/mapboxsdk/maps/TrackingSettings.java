@@ -48,7 +48,7 @@ public final class TrackingSettings {
   }
 
   void initialise(MapboxMapOptions options) {
-    locationSource = Mapbox.getLocationSource();
+    locationSource = Mapbox.getLocationEngine();
     setMyLocationEnabled(options.getLocationEnabled());
   }
 
@@ -388,7 +388,7 @@ public final class TrackingSettings {
 
     this.isCustomLocationSource = locationSource != null;
     if (locationSource == null) {
-      locationSource = Mapbox.getLocationSource();
+      locationSource = Mapbox.getLocationEngine();
     }
     this.locationSource = locationSource;
     myLocationView.setLocationSource(locationSource);
