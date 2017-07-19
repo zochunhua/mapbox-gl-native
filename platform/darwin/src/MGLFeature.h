@@ -28,9 +28,14 @@ NS_ASSUME_NONNULL_BEGIN
 
  While it is possible to add `MGLFeature`-conforming objects to the map as
  annotations using `-[MGLMapView addAnnotations:]` and related methods, doing so
- will convert feature objects into plain annotations. Features added as
- annotations will not have `identifier` or `attributes` properties set and
- should not be used be with feature querying.
+ has trade-offs:
+
+ - Features added as annotations are converted into plain annotations. These
+ annotations will not have `identifier` or `attributes` properties and should
+ not be used be with feature querying.
+
+ - Features added as annotations become interactive. Taps and selection can be
+ handled in `-[MGLMapViewDelegate mapView:didSelectAnnotation:]`.
  */
 @protocol MGLFeature <MGLAnnotation>
 
