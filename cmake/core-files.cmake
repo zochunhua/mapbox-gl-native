@@ -563,6 +563,8 @@ set(MBGL_CORE_FILES
     include/mbgl/util/work_request.hpp
     include/mbgl/util/work_task.hpp
     include/mbgl/util/work_task_impl.hpp
+    src/mbgl/util/alarm.cpp
+    src/mbgl/util/alarm.hpp
     src/mbgl/util/chrono.cpp
     src/mbgl/util/clip_id.cpp
     src/mbgl/util/clip_id.hpp
