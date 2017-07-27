@@ -1,9 +1,8 @@
 #include "run_loop_impl.hpp"
 
+#include <mbgl/util/alarm.hpp>
 #include <mbgl/util/platform.hpp>
 #include <mbgl/util/thread_local.hpp>
-#include <mbgl/util/thread.hpp>
-#include <mbgl/util/timer.hpp>
 
 #include <android/looper.h>
 
@@ -56,28 +55,6 @@ int looperCallbackDefault(int fd, int, void* data) {
 namespace mbgl {
 namespace util {
 
-// This is needed only for the RunLoop living on the main thread because of
-// how we implement timers. We sleep on `ALooper_pollAll` until the next
-// timeout, but on the main thread `ALooper_pollAll` is called by the activity
-// automatically, thus we cannot set the timeout. Instead we wake the loop
-// with an external file descriptor event coming from this thread.
-//
-// Usually an actor should not carry pointers to other threads, but in
-// this case the RunLoop itself owns the Alarm and calling wake() is the most
-// efficient way of waking up the RunLoop and it is also thread-safe.
-class Alarm {
-public:
-    Alarm(ActorRef<Alarm>, RunLoop::Impl* loop_) : loop(loop_) {}
-
-    void set(const Milliseconds& timeout) {
-        alarm.start(timeout, mbgl::Duration::zero(), [this]() { loop->wake(); });
-    }
-
-private:
-    Timer alarm;
-    RunLoop::Impl* loop;
-};
-
 RunLoop::Impl::Impl(RunLoop* runLoop_, RunLoop::Type type) : runLoop(runLoop_) {
     using namespace mbgl::android;
     detach = attach_jni_thread(theJVM, &env, platform::getCurrentThreadName());
@@ -105,7 +82,7 @@ RunLoop::Impl::Impl(RunLoop* runLoop_, RunLoop::Type type) : runLoop(runLoop_) {
     case Type::Default:
         ret = ALooper_addFd(loop, fds[PIPE_OUT], ALOOPER_POLL_CALLBACK,
             ALOOPER_EVENT_INPUT, looperCallbackDefault, this);
-        alarm = std::make_unique<Thread<Alarm>>("Alarm", this);
+        alarm = std::make_unique<Alarm>();
         running = true;
         break;
     }
@@ -193,7 +170,7 @@ Milliseconds RunLoop::Impl::processRunnables() {
 
     auto timeout = std::chrono::duration_cast<Milliseconds>(nextDue - now);
     if (alarm) {
-        alarm->actor().invoke(&Alarm::set, timeout);
+        alarm->start(timeout, [this] { wake(); });
     }
 
     return timeout;

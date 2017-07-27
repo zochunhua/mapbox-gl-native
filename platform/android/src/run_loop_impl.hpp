@@ -15,7 +15,6 @@ struct ALooper;
 namespace mbgl {
 namespace util {
 
-template <typename T> class Thread;
 class Alarm;
 
 class RunLoop::Impl {
@@ -53,7 +52,7 @@ private:
     JNIEnv *env = nullptr;
     bool detach = false;
 
-    std::unique_ptr<Thread<Alarm>> alarm;
+    std::unique_ptr<Alarm> alarm;
 
     std::recursive_mutex mtx;
     std::list<Runnable*> runnables;
