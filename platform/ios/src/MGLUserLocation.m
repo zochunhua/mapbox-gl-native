@@ -19,7 +19,7 @@ NS_ASSUME_NONNULL_END
 {
     if (self = [super init])
     {
-        _location = [[CLLocation alloc] initWithLatitude:MAXFLOAT longitude:MAXFLOAT];
+        _location = nil;
         _mapView = mapView;
     }
 
