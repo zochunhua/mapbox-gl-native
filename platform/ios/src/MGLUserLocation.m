@@ -19,7 +19,6 @@ NS_ASSUME_NONNULL_END
 {
     if (self = [super init])
     {
-        _location = nil;
         _mapView = mapView;
     }
 
