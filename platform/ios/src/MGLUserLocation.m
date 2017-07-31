@@ -101,7 +101,7 @@ NS_ASSUME_NONNULL_END
 
 - (CLLocationCoordinate2D)coordinate
 {
-    return self.location.coordinate;
+    return _location ? _location.coordinate : kCLLocationCoordinate2DInvalid;
 }
 
 - (NSString *)title
