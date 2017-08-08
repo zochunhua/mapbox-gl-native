@@ -1053,10 +1053,18 @@ public:
     [self didChangeValueForKey:@"centerCoordinate"];
 }
 
++ (NS_SET_OF(NSString *) *)keyPathsForValuesAffectingMinimumZoomLevel {
+    return [NSSet setWithObject:@"camera"];
+}
+
 - (void)setMinimumZoomLevel:(double)minimumZoomLevel
 {
     _mbglMap->setMinZoom(minimumZoomLevel);
     [self validateTileCacheSize];
+}
+
++ (NS_SET_OF(NSString *) *)keyPathsForValuesAffectingMaximumZoomLevel {
+    return [NSSet setWithObject:@"camera"];
 }
 
 - (void)setMaximumZoomLevel:(double)maximumZoomLevel

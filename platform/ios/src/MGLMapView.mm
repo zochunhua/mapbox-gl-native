@@ -2571,6 +2571,11 @@ public:
                       MGLDurationFromTimeInterval(duration));
 }
 
++ (NS_SET_OF(NSString *) *)keyPathsForValuesAffectingMinimumZoomLevel
+{
+    return [NSSet setWithObject:@"camera"];
+}
+
 - (void)setMinimumZoomLevel:(double)minimumZoomLevel
 {
     _mbglMap->setMinZoom(minimumZoomLevel);
@@ -2580,6 +2585,11 @@ public:
 - (double)minimumZoomLevel
 {
     return _mbglMap->getMinZoom();
+}
+
++ (NS_SET_OF(NSString *) *)keyPathsForValuesAffectingMaximumZoomLevel
+{
+    return [NSSet setWithObject:@"camera"];
 }
 
 - (void)setMaximumZoomLevel:(double)maximumZoomLevel
