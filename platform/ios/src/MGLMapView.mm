@@ -152,6 +152,11 @@ typedef std::unordered_map<MGLAnnotationTag, MGLAnnotationContext> MGLAnnotation
 /// Mapping from an annotation object to an annotation tag.
 typedef std::map<id<MGLAnnotation>, MGLAnnotationTag> MGLAnnotationObjectTagMap;
 
+/// Mapping from a shape annotation object to shape layer id.
+typedef std::map<id<MGLAnnotation>, std::string> MGLShapeAnnotationObjectLayerIDMap;
+
+const NSString *MGLLayerIDShapeAnnotation = @"com.mapbox.annotations.shape.";
+
 mbgl::util::UnitBezier MGLUnitBezierForMediaTimingFunction(CAMediaTimingFunction *function)
 {
     if ( ! function)
@@ -285,9 +290,11 @@ public:
 
     MGLAnnotationTagContextMap _annotationContextsByAnnotationTag;
     MGLAnnotationObjectTagMap _annotationTagsByAnnotation;
-
+    MGLShapeAnnotationObjectLayerIDMap _shapeAnnotationLayerIDs;
+    
     /// Tag of the selected annotation. If the user location annotation is selected, this ivar is set to `MGLAnnotationTagNotFound`.
     MGLAnnotationTag _selectedAnnotationTag;
+    MGLShape *_selectedShapeAnnotation;
 
     BOOL _userLocationAnnotationIsSelected;
     /// Size of the rectangle formed by unioning the maximum slop area around every annotation image and annotation image view.
@@ -468,6 +475,7 @@ public:
     _annotationImagesByIdentifier = [NSMutableDictionary dictionary];
     _annotationContextsByAnnotationTag = {};
     _annotationTagsByAnnotation = {};
+    _shapeAnnotationLayerIDs = {};
     _annotationViewReuseQueueByIdentifier = [NSMutableDictionary dictionary];
     _selectedAnnotationTag = MGLAnnotationTagNotFound;
     _annotationsNearbyLastTap = {};
@@ -1483,12 +1491,20 @@ public:
     id<MGLAnnotation>annotation = [self annotationForGestureRecognizer:singleTap persistingResults:YES];
     if(annotation)
     {
+        [self deselectShapeAnnotation:_selectedShapeAnnotation];
         [self selectAnnotation:annotation animated:YES];
     }
     else
     {
         [self deselectAnnotation:self.selectedAnnotation animated:YES];
+        MGLShape *shapeAnnotation = [self shapeAnnotationForGestureRecognizer:singleTap];
+        if (shapeAnnotation) {
+            [self selectShapeAnnotation:shapeAnnotation];
+        } else {
+            [self deselectShapeAnnotation:_selectedShapeAnnotation];
+        }
     }
+    
 }
 
 /**
@@ -1861,8 +1877,12 @@ public:
         if(!self.selectedAnnotation)
         {
             id<MGLAnnotation>annotation = [self annotationForGestureRecognizer:(UITapGestureRecognizer*)gestureRecognizer persistingResults:NO];
-            if(!annotation) {
-                return NO;
+            if(!annotation && !_selectedShapeAnnotation) {
+                MGLShape *shapeAnnotation = [self shapeAnnotationForGestureRecognizer:(UITapGestureRecognizer*)gestureRecognizer];
+                if (!shapeAnnotation) {
+                    return NO;
+                }
+                
             }
         }
     }
@@ -3226,6 +3246,8 @@ public:
             context.annotation = annotation;
             _annotationContextsByAnnotationTag[annotationTag] = context;
             _annotationTagsByAnnotation[annotation] = annotationTag;
+            NSString *layerID = [NSString stringWithFormat:@"%@%u", MGLLayerIDShapeAnnotation, annotationTag];
+            _shapeAnnotationLayerIDs[annotation] = layerID.UTF8String;
 
             [(NSObject *)annotation addObserver:self forKeyPath:@"coordinates" options:0 context:(void *)(NSUInteger)annotationTag];
         }
@@ -3524,6 +3546,7 @@ public:
 
         _annotationContextsByAnnotationTag.erase(annotationTag);
         _annotationTagsByAnnotation.erase(annotation);
+        _shapeAnnotationLayerIDs.erase(annotation);
 
         if ([annotation isKindOfClass:[NSObject class]] && ![annotation isKindOfClass:[MGLMultiPoint class]])
         {
@@ -4148,6 +4171,111 @@ public:
             _mbglMap->updateAnnotation(pair.first, mbgl::SymbolAnnotation { point, iconIdentifier.UTF8String ?: "" });
         }
     }
+}
+
+#pragma mark - Shape Annotation
+
+- (void)selectShapeAnnotation:(MGLShape *)shapeAnnotation
+{
+    if (!shapeAnnotation) return;
+    
+    if (shapeAnnotation == _selectedShapeAnnotation) return;
+    
+    [self deselectShapeAnnotation:_selectedShapeAnnotation];
+    
+    _selectedShapeAnnotation = shapeAnnotation;
+    
+    if ([self.delegate respondsToSelector:@selector(mapView:didSelectShapeAnnotation:)])
+    {
+        [self.delegate mapView:self didSelectShapeAnnotation:shapeAnnotation];
+    }
+}
+
+- (void)deselectShapeAnnotation:(MGLShape *)shapeAnnotation
+{
+    if (!shapeAnnotation) return;
+    
+    if (_selectedShapeAnnotation == shapeAnnotation)
+    {
+        if ([self.delegate respondsToSelector:@selector(mapView:didDeselectShapeAnnotation:)])
+        {
+            [self.delegate mapView:self didDeselectShapeAnnotation:shapeAnnotation];
+        }
+        _selectedShapeAnnotation = nil;
+    }
+   
+}
+
+- (MGLShape*)shapeAnnotationForGestureRecognizer:(UITapGestureRecognizer*)singleTap
+{
+    CGPoint tapPoint = [singleTap locationInView:self];
+//    CGRect queryRect = CGRectInset({ tapPoint, CGSizeZero },
+//                                   -_unionedAnnotationRepresentationSize.width,
+//                                   -_unionedAnnotationRepresentationSize.height);
+//    queryRect = CGRectInset(queryRect, -MGLAnnotationImagePaddingForHitTest,
+//                            -MGLAnnotationImagePaddingForHitTest);
+//    
+//    NSMutableSet *layerIDs = [NSMutableSet set];
+//    
+//    for (const auto &annotation : _shapeAnnotationLayerIDs) {
+//        const std::string layerID = annotation.second;
+//        [layerIDs addObject:[NSString stringWithUTF8String:layerID.c_str()]];
+//    }
+//    
+//    NSArray *nearbyFeatures = [self visibleFeaturesInRect:queryRect inStyleLayersWithIdentifiers:layerIDs predicate:nil];
+//    id<MGLFeature> feature = nearbyFeatures.firstObject;
+//    
+    MGLAnnotationTag hitAnnotationTag = [self shapeAnnotationTagAtPoint:tapPoint];
+    
+    if (hitAnnotationTag != MGLAnnotationTagNotFound) {
+        id <MGLAnnotation> annotation = [self annotationWithTag:hitAnnotationTag];
+        NSAssert(annotation, @"Cannot select nonexistent annotation with tag %u", hitAnnotationTag);
+        if ([annotation isKindOfClass:[MGLShape class]]) {
+            return (MGLShape *)annotation;
+        }
+    }
+    
+    return nil;
+}
+
+- (MGLAnnotationTag)shapeAnnotationTagAtPoint:(CGPoint)point
+{
+    CGRect queryRect = CGRectInset({ point, CGSizeZero },
+                                   -_unionedAnnotationRepresentationSize.width,
+                                   -_unionedAnnotationRepresentationSize.height);
+    queryRect = CGRectInset(queryRect, -MGLAnnotationImagePaddingForHitTest,
+                            -MGLAnnotationImagePaddingForHitTest);
+    
+    std::vector<MGLAnnotationTag> nearbyAnnotations = [self shapeAnnotationTagsInRect:queryRect];
+    
+    MGLAnnotationTag hitAnnotationTag = MGLAnnotationTagNotFound;
+    
+    // Choose the first nearby annotation.
+    if (nearbyAnnotations.size())
+    {
+        hitAnnotationTag = nearbyAnnotations.front();
+    }
+    return hitAnnotationTag;
+}
+
+- (std::vector<MGLAnnotationTag>)shapeAnnotationTagsInRect:(CGRect)rect
+{
+    mbgl::ScreenBox screenBox = {
+        { CGRectGetMinX(rect), CGRectGetMinY(rect) },
+        { CGRectGetMaxX(rect), CGRectGetMaxY(rect) },
+    };
+    
+    mbgl::optional<std::vector<std::string>> optionalLayerIDs;
+    if (_shapeAnnotationLayerIDs.size()) {
+        __block std::vector<std::string> layerIDs;
+        layerIDs.reserve(_shapeAnnotationLayerIDs.size());
+        for (const auto &annotation : _shapeAnnotationLayerIDs) {
+            layerIDs.push_back(annotation.second);
+        }
+        optionalLayerIDs = layerIDs;
+    }
+
+    return _mbglMap->queryShapeAnnotations(screenBox, { optionalLayerIDs });
 }
 
 #pragma mark - User Location -
