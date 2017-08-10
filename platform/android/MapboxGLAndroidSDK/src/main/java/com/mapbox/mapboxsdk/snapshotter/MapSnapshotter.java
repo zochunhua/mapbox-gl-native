@@ -2,6 +2,7 @@ package com.mapbox.mapboxsdk.snapshotter;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.support.annotation.UiThread;
 
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.storage.FileSource;
@@ -42,6 +43,14 @@ public class MapSnapshotter {
     nativeStart();
   }
 
+  /**
+   * Must be called in onPause or when discarding the object
+   */
+  @UiThread
+  public void stop() {
+    nativeDestroy();
+  }
+
   protected void onSnapshotReady(Bitmap bitmap) {
     callback.onSnapshotReady(bitmap);
   }
@@ -53,6 +62,6 @@ public class MapSnapshotter {
 
   protected native void nativeStart();
 
-  @Override
-  protected native void finalize() throws Throwable;
+  protected native void nativeDestroy();
+
 }

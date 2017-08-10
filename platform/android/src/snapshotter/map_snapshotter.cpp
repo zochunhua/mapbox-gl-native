@@ -89,7 +89,7 @@ void MapSnapshotter::registerNative(jni::JNIEnv& env) {
     jni::RegisterNativePeer<MapSnapshotter>(env, MapSnapshotter::javaClass, "nativePtr",
                                            std::make_unique<MapSnapshotter, JNIEnv&, jni::Object<MapSnapshotter>, jni::Object<FileSource>, jni::jfloat, jni::jint, jni::jint, jni::String, jni::String>,
                                            "nativeInitialize",
-                                           "finalize",
+                                           "nativeDestroy",
                                             METHOD(&MapSnapshotter::start, "nativeStart")
     );
 }
