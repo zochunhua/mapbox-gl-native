@@ -39,7 +39,7 @@ public class MapSnapshotterActivity extends AppCompatActivity {
   @Override
   public void onPause() {
     super.onPause();
-    //snapshotter.stop();
+    snapshotter.stop();
   }
 
 }
