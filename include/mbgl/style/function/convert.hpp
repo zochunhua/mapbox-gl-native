@@ -1,5 +1,6 @@
 #pragma once
 
+
 #include <mbgl/util/enum.hpp>
 #include <mbgl/style/types.hpp>
 #include <mbgl/style/expression/array_assertion.hpp>
